@@ -6,9 +6,9 @@
 const SUPABASE_URL = 'https://nliyrssnkfaghwyqvsrm.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5saXlyc3Nua2ZhZ2h3eXF2c3JtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM0MjE4ODYsImV4cCI6MjA5ODk5Nzg4Nn0.0SjFK9e5k766kXz1huQ59ACQvB6LU8XsW9Jc_D1W0Zk';
 
-let supabase = null;
+let supabaseClient = null;
 if (typeof window.supabase !== 'undefined') {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 }
 
 // 2. Dashboard Global State
@@ -43,8 +43,8 @@ const bookingsTableBody = document.getElementById('bookings-table-body');
 /* ==========================================================================
    4. Authentication State Watcher
    ========================================================================== */
-if (supabase) {
-    supabase.auth.onAuthStateChange((event, session) => {
+if (supabaseClient) {
+    supabaseClient.auth.onAuthStateChange((event, session) => {
         if (session && session.user) {
             // User is authenticated successfully
             adminEmailDisplay.textContent = session.user.email;
@@ -63,7 +63,7 @@ if (supabase) {
             
             // Clean up real-time channel
             if (realtimeChannel) {
-                supabase.removeChannel(realtimeChannel);
+                supabaseClient.removeChannel(realtimeChannel);
                 realtimeChannel = null;
             }
         }
@@ -73,7 +73,7 @@ if (supabase) {
 // Login Form Submit handler
 loginForm.addEventListener('submit', async (e) => {
     e.preventDefault();
-    if (!supabase) return;
+    if (!supabaseClient) return;
 
     const email = loginEmailInput.value.trim();
     const password = loginPasswordInput.value.trim();
@@ -87,7 +87,7 @@ loginForm.addEventListener('submit', async (e) => {
     loginBtnSpinner.classList.remove('hidden');
 
     try {
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
             email: email,
             password: password
         });
@@ -110,18 +110,18 @@ loginForm.addEventListener('submit', async (e) => {
 
 // Logout Button handler
 logoutBtn.addEventListener('click', async () => {
-    if (!supabase) return;
-    await supabase.auth.signOut();
+    if (!supabaseClient) return;
+    await supabaseClient.auth.signOut();
 });
 
 /* ==========================================================================
    5. Database Fetching & Updating Logic
    ========================================================================== */
 async function fetchBookings() {
-    if (!supabase) return;
+    if (!supabaseClient) return;
 
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('prebookings')
             .select('*')
             .order('created_at', { ascending: false });
@@ -381,9 +381,9 @@ function escapeHtml(str) {
    9. Supabase Real-time Listener (Instant updates on mobile screen)
    ========================================================================== */
 function initRealtimeSubscription() {
-    if (!supabase) return;
+    if (!supabaseClient) return;
 
-    realtimeChannel = supabase.channel('prebookings-live-channel')
+    realtimeChannel = supabaseClient.channel('prebookings-live-channel')
         .on('postgres_changes', {
             event: 'INSERT',
             schema: 'public',
