@@ -40,6 +40,14 @@ const tableSearchInput = document.getElementById('table-search');
 const exportCsvBtn = document.getElementById('export-csv-btn');
 const bookingsTableBody = document.getElementById('bookings-table-body');
 
+// Quick session check to prevent login screen flash on page refresh
+const projectRef = 'nliyrssnkfaghwyqvsrm';
+const hasSession = localStorage.getItem(`sb-${projectRef}-auth-token`) !== null;
+if (hasSession && loginContainer && dashboardContainer) {
+    loginContainer.classList.add('hidden');
+    dashboardContainer.classList.remove('hidden');
+}
+
 /* ==========================================================================
    4. Authentication State Watcher
    ========================================================================== */
