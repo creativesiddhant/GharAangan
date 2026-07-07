@@ -243,7 +243,7 @@ function initFormValidation() {
                 .then(({ error }) => {
                     if (error) {
                         console.error('Supabase Error:', error);
-                        alert('Something went wrong. Please check connection or try again.');
+                        alert('Supabase Database Error: ' + (error.message || 'Unknown error') + '\nDetails: ' + (error.details || 'None'));
                         
                         // Restore button state on error
                         submitBtn.disabled = false;
@@ -255,7 +255,7 @@ function initFormValidation() {
                 })
                 .catch(err => {
                     console.error('Execution Error:', err);
-                    alert('Could not submit booking. Please try again.');
+                    alert('Connection/Script Error: ' + (err.message || err));
                     
                     submitBtn.disabled = false;
                     btnText.classList.remove('hidden');
