@@ -29,6 +29,14 @@ const loginSubmitBtn = document.getElementById('login-submit-btn');
 const loginBtnText = loginSubmitBtn.querySelector('.btn-text');
 const loginBtnSpinner = loginSubmitBtn.querySelector('.btn-spinner');
 
+// Helper to reset login submit button state
+function resetLoginButtonState() {
+    if (loginSubmitBtn) loginSubmitBtn.disabled = false;
+    if (loginBtnText) loginBtnText.classList.remove('hidden');
+    if (loginBtnSpinner) loginBtnSpinner.classList.add('hidden');
+    if (loginPasswordInput) loginPasswordInput.value = '';
+}
+
 const adminEmailDisplay = document.getElementById('admin-email-display');
 const logoutBtn = document.getElementById('logout-btn');
 const realtimeAlert = document.getElementById('realtime-alert');
@@ -77,11 +85,13 @@ async function restoreSession() {
             console.log('No valid session, showing login.');
             loginContainer.classList.remove('hidden');
             dashboardContainer.classList.add('hidden');
+            resetLoginButtonState();
         }
     } catch (err) {
         console.error('Session restore exception:', err);
         loginContainer.classList.remove('hidden');
         dashboardContainer.classList.add('hidden');
+        resetLoginButtonState();
     }
 }
 
@@ -112,6 +122,7 @@ if (supabaseClient) {
             dashboardContainer.classList.add('hidden');
             bookingsData = [];
             visitsData = [];
+            resetLoginButtonState();
             
             // Clean up real-time channel
             if (realtimeChannel) {
@@ -150,16 +161,12 @@ loginForm.addEventListener('submit', async (e) => {
         if (error) {
             console.error('Authentication error:', error.message);
             loginErrorMsg.classList.remove('hidden');
-            loginSubmitBtn.disabled = false;
-            loginBtnText.classList.remove('hidden');
-            loginBtnSpinner.classList.add('hidden');
+            resetLoginButtonState();
         }
     } catch (err) {
         console.error('Unexpected auth exception:', err);
         loginErrorMsg.classList.remove('hidden');
-        loginSubmitBtn.disabled = false;
-        loginBtnText.classList.remove('hidden');
-        loginBtnSpinner.classList.add('hidden');
+        resetLoginButtonState();
     }
 });
 
