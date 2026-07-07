@@ -41,33 +41,66 @@ const exportCsvBtn = document.getElementById('export-csv-btn');
 const bookingsTableBody = document.getElementById('bookings-table-body');
 
 // Quick session check to prevent login screen flash on page refresh
-const projectRef = 'nliyrssnkfaghwyqvsrm';
-const hasSession = localStorage.getItem(`sb-${projectRef}-auth-token`) !== null;
-if (hasSession && loginContainer && dashboardContainer) {
+const hasCachedSession = Object.keys(localStorage).some(key => key.includes('auth-token') || key.includes('supabase'));
+if (hasCachedSession && loginContainer && dashboardContainer) {
     loginContainer.classList.add('hidden');
     dashboardContainer.classList.remove('hidden');
 }
 
 /* ==========================================================================
-   4. Authentication State Watcher
+   4. Authentication State Watcher & Session Restoration
    ========================================================================== */
+async function restoreSession() {
+    if (!supabaseClient) return;
+    
+    try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (session && session.user) {
+            console.log('Session restored successfully:', session.user.email);
+            adminEmailDisplay.textContent = session.user.email;
+            loginContainer.classList.add('hidden');
+            dashboardContainer.classList.remove('hidden');
+            if (bookingsData.length === 0) {
+                fetchBookings();
+            }
+            if (!realtimeChannel) {
+                initRealtimeSubscription();
+            }
+        } else {
+            console.log('No valid session, showing login.');
+            loginContainer.classList.remove('hidden');
+            dashboardContainer.classList.add('hidden');
+        }
+    } catch (err) {
+        console.error('Session restore exception:', err);
+        loginContainer.classList.remove('hidden');
+        dashboardContainer.classList.add('hidden');
+    }
+}
+
 if (supabaseClient) {
     supabaseClient.auth.onAuthStateChange((event, session) => {
+        console.log('Auth State Changed:', event, session ? session.user.email : 'null');
         if (session && session.user) {
             // User is authenticated successfully
             adminEmailDisplay.textContent = session.user.email;
             loginContainer.classList.add('hidden');
             dashboardContainer.classList.remove('hidden');
             
-            // Fetch initial database records
-            fetchBookings();
+            // Only fetch if data is empty (to avoid double fetch during restoreSession)
+            if (bookingsData.length === 0) {
+                fetchBookings();
+            }
             
             // Set up real-time table notifications
-            initRealtimeSubscription();
-        } else {
-            // User is logged out
+            if (!realtimeChannel) {
+                initRealtimeSubscription();
+            }
+        } else if (event === 'SIGNED_OUT') {
+            // Explicitly logged out
             loginContainer.classList.remove('hidden');
             dashboardContainer.classList.add('hidden');
+            bookingsData = [];
             
             // Clean up real-time channel
             if (realtimeChannel) {
@@ -77,6 +110,9 @@ if (supabaseClient) {
         }
     });
 }
+
+// Call restoreSession immediately on load
+restoreSession();
 
 // Login Form Submit handler
 loginForm.addEventListener('submit', async (e) => {
