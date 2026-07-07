@@ -218,6 +218,35 @@ body {
     gap: 8px;
 }
 
+.login-footer {
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(43, 30, 23, 0.08);
+}
+
+.back-home-link {
+    color: var(--gold-dark);
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: var(--transition-smooth);
+}
+
+.back-home-link:hover {
+    color: var(--primary-green);
+}
+
+.back-home-link i {
+    transition: var(--transition-smooth);
+}
+
+.back-home-link:hover i {
+    transform: translateX(-4px);
+}
+
 /* ==========================================================================
    2. Admin Dashboard View Styling
    ========================================================================== */
