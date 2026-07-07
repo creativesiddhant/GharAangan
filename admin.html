@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ghar Aangan - Super Admin Panel</title>
+
+    <!-- Google Fonts & Font Awesome -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+
+    <!-- 1. Secure Login View -->
+    <div id="login-container" class="login-wrapper">
+        <div class="login-card">
+            <div class="login-logo-row">
+                <img src="assets/logo.jpg" alt="Ghar Aangan Logo" class="login-logo">
+                <h1>घर आँगन</h1>
+            </div>
+            <p class="login-subtitle">Super Admin Console Login</p>
+            
+            <form id="login-form" novalidate>
+                <div class="input-group">
+                    <label for="admin-email"><i class="fa-regular fa-envelope"></i> Email Address</label>
+                    <input type="email" id="admin-email" placeholder="admin@gharaangan.com" required>
+                </div>
+                <div class="input-group">
+                    <label for="admin-password"><i class="fa-solid fa-lock"></i> Password</label>
+                    <input type="password" id="admin-password" placeholder="••••••••" required>
+                </div>
+                <div id="login-error-msg" class="login-error hidden">
+                    <i class="fa-solid fa-triangle-exclamation"></i> Invalid email or password.
+                </div>
+                <button type="submit" id="login-submit-btn" class="btn btn-primary btn-block">
+                    <span class="btn-text">Log In</span>
+                    <span class="btn-spinner hidden"><i class="fa-solid fa-spinner fa-spin"></i> Authenticating...</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. Admin Dashboard View (Hidden by default) -->
+    <div id="dashboard-container" class="dashboard-wrapper hidden">
+        
+        <!-- Sidebar Navigation (Desktop) / Header (Mobile) -->
+        <header class="admin-header">
+            <div class="container header-flex">
+                <div class="brand-area">
+                    <img src="assets/logo.jpg" alt="Ghar Aangan Logo" class="admin-logo">
+                    <div class="brand-text">
+                        <h2>घर आँगन</h2>
+                        <span>Super Admin Panel</span>
+                    </div>
+                </div>
+                
+                <div class="admin-user-controls">
+                    <span class="user-badge"><i class="fa-regular fa-user"></i> <span id="admin-email-display">admin@gharaangan.com</span></span>
+                    <button id="logout-btn" class="btn-logout"><i class="fa-solid fa-power-off"></i> Logout</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Dashboard Content -->
+        <main class="container admin-main">
+            
+            <!-- Real-time Alert Notification Banner -->
+            <div id="realtime-alert" class="alert-banner hidden">
+                <i class="fa-solid fa-bell bell-ring"></i> New Pre-booking received in real-time! Updating stats...
+            </div>
+
+            <!-- KPI Metric Cards -->
+            <section class="kpi-grid">
+                <!-- KPI 1: Total Prebookings -->
+                <div class="kpi-card">
+                    <div class="kpi-icon-row">
+                        <span class="kpi-icon icon-green"><i class="fa-solid fa-users"></i></span>
+                        <span class="kpi-change"><i class="fa-solid fa-circle"></i> Live</span>
+                    </div>
+                    <div class="kpi-body">
+                        <h3>Total Bookings</h3>
+                        <p id="kpi-total-bookings" class="kpi-number">0</p>
+                    </div>
+                </div>
+
+                <!-- KPI 2: Total Litres -->
+                <div class="kpi-card">
+                    <div class="kpi-icon-row">
+                        <span class="kpi-icon icon-gold"><i class="fa-solid fa-bucket"></i></span>
+                        <span class="kpi-label">Estimated Volume</span>
+                    </div>
+                    <div class="kpi-body">
+                        <h3>Total Liters Churned</h3>
+                        <p id="kpi-total-liters" class="kpi-number">0L</p>
+                    </div>
+                </div>
+
+                <!-- KPI 3: Most Popular Package -->
+                <div class="kpi-card">
+                    <div class="kpi-icon-row">
+                        <span class="kpi-icon icon-brown"><i class="fa-solid fa-fire-flame-curved"></i></span>
+                        <span class="kpi-label">Highest Demand</span>
+                    </div>
+                    <div class="kpi-body">
+                        <h3>Popular Package</h3>
+                        <p id="kpi-popular-pkg" class="kpi-number">None</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Analytics Charts Section -->
+            <section class="charts-section">
+                <!-- Chart 1: Quantity Distribution -->
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <h3>Package Demand Distribution</h3>
+                        <p>Visualizing which package has more demand</p>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="quantityChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Chart 2: Daily Bookings Trend -->
+                <div class="chart-card">
+                    <div class="chart-card-header">
+                        <h3>Pre-booking Volume Trend</h3>
+                        <p>Timeline of bookings received daily</p>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="timelineChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Detailed Bookings List -->
+            <section class="bookings-list-section">
+                <div class="list-card">
+                    <div class="list-card-header">
+                        <div class="list-title-area">
+                            <h3>Pre-booking Registry</h3>
+                            <p>Real-time customer lists</p>
+                        </div>
+                        
+                        <div class="list-actions">
+                            <div class="search-box">
+                                <i class="fa-solid fa-magnifying-glass"></i>
+                                <input type="text" id="table-search" placeholder="Search by name or mobile...">
+                            </div>
+                            <button id="export-csv-btn" class="btn btn-secondary btn-sm"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
+                        </div>
+                    </div>
+
+                    <!-- Bookings Responsive Table -->
+                    <div class="table-wrapper">
+                        <table id="bookings-table">
+                            <thead>
+                                <tr>
+                                    <th>Date & Time</th>
+                                    <th>Full Name</th>
+                                    <th>Mobile Number</th>
+                                    <th>Quantity Selected</th>
+                                    <th>Dial Customer</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bookings-table-body">
+                                <tr>
+                                    <td colspan="5" class="table-loading-row">
+                                        <i class="fa-solid fa-spinner fa-spin"></i> Loading pre-bookings list...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- Supabase Client CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="admin.js"></script>
+</body>
+</html>
