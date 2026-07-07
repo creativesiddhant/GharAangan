@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initFaqAccordion();
     initFormValidation();
     initMobileCtaScroll();
+    initMobilePrebookScroll();
     logVisit();
 });
 
@@ -376,6 +377,42 @@ async function logVisit() {
         } catch (dbErr) {
             console.error('Error logging visit to database:', dbErr);
         }
+    }
+}
+
+/* ==========================================================================
+   7. Mobile Prebook Smooth Scroll Offset
+   ========================================================================== */
+function initMobilePrebookScroll() {
+    function scrollToForm(smooth = true) {
+        const isMobile = window.innerWidth <= 768;
+        if (isMobile) {
+            const targetForm = document.getElementById('prebook-form');
+            if (targetForm) {
+                targetForm.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'center' });
+            }
+        }
+    }
+
+    // 1. Intercept link clicks on mobile
+    document.querySelectorAll('a[href="#prebook"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            const isMobile = window.innerWidth <= 768;
+            if (isMobile) {
+                e.preventDefault();
+                scrollToForm(true);
+                // Update URL hash silently
+                history.pushState(null, null, '#prebook');
+            }
+        });
+    });
+
+    // 2. Intercept page load with hash #prebook
+    if (window.location.hash === '#prebook') {
+        // Wait for rendering to complete before running scroll
+        setTimeout(() => {
+            scrollToForm(true);
+        }, 600);
     }
 }
 
