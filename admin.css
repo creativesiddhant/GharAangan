@@ -623,6 +623,26 @@ tr:hover td {
     transform: scale(1.1);
 }
 
+.btn-delete {
+    width: 36px;
+    height: 36px;
+    background-color: rgba(217, 83, 79, 0.08);
+    color: var(--danger);
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+}
+
+.btn-delete:hover {
+    background-color: var(--danger);
+    color: var(--white);
+    transform: scale(1.1);
+}
+
 .table-loading-row {
     text-align: center;
     padding: 40px;

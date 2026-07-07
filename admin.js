@@ -354,9 +354,14 @@ function renderBookingsTable() {
             <td>+91 ${escapeHtml(booking.mobile_number)}</td>
             <td><span class="qty-badge">${escapeHtml(booking.quantity)}</span></td>
             <td>
-                <a href="tel:+91${booking.mobile_number}" class="btn-dial" title="Call Customer">
-                    <i class="fa-solid fa-phone"></i>
-                </a>
+                <div style="display: flex; gap: 8px;">
+                    <a href="tel:+91${booking.mobile_number}" class="btn-dial" title="Call Customer">
+                        <i class="fa-solid fa-phone"></i>
+                    </a>
+                    <button class="btn-delete" onclick="deleteBooking(${booking.id})" title="Delete Pre-booking">
+                        <i class="fa-regular fa-trash-can"></i>
+                    </button>
+                </div>
             </td>
         `;
 
@@ -399,6 +404,16 @@ function initRealtimeSubscription() {
 
             // Trigger visual banner sound / display notification
             triggerRealtimeBanner();
+        })
+        .on('postgres_changes', {
+            event: 'DELETE',
+            schema: 'public',
+            table: 'prebookings'
+        }, payload => {
+            console.log('Real-time Delete Payload:', payload);
+            const deletedId = payload.old.id;
+            bookingsData = bookingsData.filter(booking => booking.id !== deletedId);
+            updateDashboardView();
         })
         .subscribe();
 }
@@ -444,3 +459,30 @@ exportCsvBtn.addEventListener('click', () => {
     link.click();
     document.body.removeChild(link);
 });
+
+// 11. Delete Pre-booking Action (authenticated users only via RLS)
+window.deleteBooking = async function(id) {
+    if (!supabaseClient) return;
+
+    const confirmDelete = confirm("Are you sure you want to delete this pre-booking entry? This action cannot be undone.");
+    if (!confirmDelete) return;
+
+    try {
+        const { error } = await supabaseClient
+            .from('prebookings')
+            .delete()
+            .eq('id', id);
+
+        if (error) {
+            console.error('Error deleting booking:', error.message);
+            alert('Failed to delete booking: ' + error.message);
+        } else {
+            // Delete locally from bookingsData array to trigger instant UI refresh
+            bookingsData = bookingsData.filter(booking => booking.id !== id);
+            updateDashboardView();
+        }
+    } catch (err) {
+        console.error('Delete exception:', err);
+        alert('An unexpected error occurred while deleting.');
+    }
+};
