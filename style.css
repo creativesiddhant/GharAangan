@@ -1459,6 +1459,10 @@ p {
         padding: 10px 0;
     }
     
+    .navbar {
+        justify-content: center;
+    }
+    
     .nav-menu {
         display: none; /* Hide standard navigation on mobile */
     }
