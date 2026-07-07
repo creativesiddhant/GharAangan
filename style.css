@@ -963,7 +963,7 @@ p {
 
 .prebook-perks li {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 12px;
     margin-bottom: 16px;
     font-size: 1.05rem;
@@ -972,6 +972,8 @@ p {
 
 .prebook-perks li i {
     color: var(--gold);
+    margin-top: 5px;
+    flex-shrink: 0;
 }
 
 /* Glassmorphic Form Card */
@@ -1528,6 +1530,16 @@ p {
     
     .prebook-title {
         font-size: 2.2rem;
+    }
+    
+    .prebook-perks li {
+        font-size: 0.95rem;
+        margin-bottom: 12px;
+        line-height: 1.5;
+    }
+    
+    .prebook-perks li i {
+        margin-top: 4px;
     }
     
     .form-card-wrapper {
