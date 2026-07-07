@@ -206,6 +206,18 @@ async function fetchVisits() {
     if (!supabaseClient) return;
 
     try {
+        // 1. Delete visitor logs older than 12 hours to save DB space
+        const twelveHoursAgo = new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString();
+        const { error: deleteError } = await supabaseClient
+            .from('site_visits')
+            .delete()
+            .lt('created_at', twelveHoursAgo);
+
+        if (deleteError) {
+            console.warn('Error cleaning up old visitor logs:', deleteError.message);
+        }
+
+        // 2. Fetch the remaining visits (from the last 12 hours)
         const { data, error } = await supabaseClient
             .from('site_visits')
             .select('*')
@@ -220,7 +232,19 @@ async function fetchVisits() {
         }
 
         visitsData = data || [];
-        updateVisitsView();
+
+        // 3. Fetch the total lifetime visitors count via RPC function
+        let totalVisitorsCount = visitsData.length;
+        const { data: totalCount, error: rpcError } = await supabaseClient
+            .rpc('get_total_visitors');
+
+        if (!rpcError && totalCount !== null) {
+            totalVisitorsCount = totalCount;
+        } else {
+            console.warn('Error fetching total visitors via RPC, falling back to local count:', rpcError?.message);
+        }
+
+        updateVisitsView(totalVisitorsCount);
     } catch (err) {
         console.error('Fetch visits exception:', err);
         if (visitorsTableBody) {
@@ -229,9 +253,9 @@ async function fetchVisits() {
     }
 }
 
-function updateVisitsView() {
+function updateVisitsView(totalCount) {
     if (kpiTotalVisitors) {
-        kpiTotalVisitors.textContent = visitsData.length;
+        kpiTotalVisitors.textContent = totalCount !== undefined ? totalCount : visitsData.length;
     }
     renderVisitsTable();
 }
@@ -597,14 +621,21 @@ function initRealtimeSubscription() {
             console.log('Real-time Visitor Payload:', payload);
             if (payload.eventType === 'INSERT') {
                 visitsData.unshift(payload.new);
-                updateVisitsView();
+                // Increment the UI counter for a new lifetime visit
+                if (kpiTotalVisitors) {
+                    const currentVal = parseInt(kpiTotalVisitors.textContent, 10) || 0;
+                    kpiTotalVisitors.textContent = currentVal + 1;
+                }
+                renderVisitsTable();
             } else if (payload.eventType === 'DELETE') {
                 if (payload.old && payload.old.id) {
                     visitsData = visitsData.filter(visit => visit.id !== payload.old.id);
                 } else {
                     fetchVisits();
+                    return;
                 }
-                updateVisitsView();
+                // Do not decrement total visitors count on delete as it is a lifetime total
+                renderVisitsTable();
             }
         })
         .subscribe();
@@ -698,7 +729,8 @@ if (clearVisitsBtn) {
                 alert('Failed to clear visitor logs: ' + error.message);
             } else {
                 visitsData = [];
-                updateVisitsView();
+                // Re-fetch to ensure the RPC total count is maintained and view is updated
+                fetchVisits();
                 alert('Visitor logs cleared successfully.');
             }
         } catch (err) {
