@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initFaqAccordion();
     initFormValidation();
     initMobileCtaScroll();
+    logVisit();
 });
 
 /* ==========================================================================
@@ -309,3 +310,72 @@ function initMobileCtaScroll() {
         }
     });
 }
+
+/* ==========================================================================
+   6. Visitor Tracking Logic (IP & Geolocation Logger)
+   ========================================================================== */
+async function logVisit() {
+    // Prevent double logging within the same session
+    if (sessionStorage.getItem('gharaangan_session_visited')) {
+        return;
+    }
+
+    let ipData = {
+        ip_address: 'Unknown',
+        country: 'Unknown',
+        city: 'Unknown',
+        region: 'Unknown'
+    };
+
+    try {
+        // Fetch location data from ipapi.co
+        const res = await fetch('https://ipapi.co/json/');
+        if (res.ok) {
+            const data = await res.json();
+            ipData.ip_address = data.ip || 'Unknown';
+            ipData.country = data.country_name || 'Unknown';
+            ipData.city = data.city || 'Unknown';
+            ipData.region = data.region || 'Unknown';
+        }
+    } catch (err) {
+        console.warn('Primary IP location lookup failed, attempting fallback...', err);
+        try {
+            // Fallback: ipinfo.io
+            const res = await fetch('https://ipinfo.io/json');
+            if (res.ok) {
+                const data = await res.json();
+                ipData.ip_address = data.ip || 'Unknown';
+                ipData.country = data.country || 'Unknown';
+                ipData.city = data.city || 'Unknown';
+                ipData.region = data.region || 'Unknown';
+            }
+        } catch (fallbackErr) {
+            console.error('All IP location providers failed:', fallbackErr);
+        }
+    }
+
+    if (supabaseClient) {
+        try {
+            const { error } = await supabaseClient
+                .from('site_visits')
+                .insert([
+                    {
+                        ip_address: ipData.ip_address,
+                        country: ipData.country,
+                        city: ipData.city,
+                        region: ipData.region,
+                        user_agent: navigator.userAgent
+                    }
+                ]);
+            
+            if (!error) {
+                sessionStorage.setItem('gharaangan_session_visited', 'true');
+            } else {
+                console.error('Database failed to log visit:', error);
+            }
+        } catch (dbErr) {
+            console.error('Error logging visit to database:', dbErr);
+        }
+    }
+}
+

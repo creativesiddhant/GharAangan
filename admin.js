@@ -13,6 +13,7 @@ if (typeof window.supabase !== 'undefined') {
 
 // 2. Dashboard Global State
 let bookingsData = [];
+let visitsData = [];
 let quantityChart = null;
 let timelineChart = null;
 let realtimeChannel = null;
@@ -35,6 +36,9 @@ const realtimeAlert = document.getElementById('realtime-alert');
 const kpiTotalBookings = document.getElementById('kpi-total-bookings');
 const kpiTotalLiters = document.getElementById('kpi-total-liters');
 const kpiPopularPkg = document.getElementById('kpi-popular-pkg');
+const kpiTotalVisitors = document.getElementById('kpi-total-visitors');
+const visitorsTableBody = document.getElementById('visitors-table-body');
+const clearVisitsBtn = document.getElementById('clear-visits-btn');
 
 const tableSearchInput = document.getElementById('table-search');
 const exportCsvBtn = document.getElementById('export-csv-btn');
@@ -62,6 +66,9 @@ async function restoreSession() {
             dashboardContainer.classList.remove('hidden');
             if (bookingsData.length === 0) {
                 fetchBookings();
+            }
+            if (visitsData.length === 0) {
+                fetchVisits();
             }
             if (!realtimeChannel) {
                 initRealtimeSubscription();
@@ -91,6 +98,9 @@ if (supabaseClient) {
             if (bookingsData.length === 0) {
                 fetchBookings();
             }
+            if (visitsData.length === 0) {
+                fetchVisits();
+            }
             
             // Set up real-time table notifications
             if (!realtimeChannel) {
@@ -101,6 +111,7 @@ if (supabaseClient) {
             loginContainer.classList.remove('hidden');
             dashboardContainer.classList.add('hidden');
             bookingsData = [];
+            visitsData = [];
             
             // Clean up real-time channel
             if (realtimeChannel) {
@@ -182,6 +193,118 @@ async function fetchBookings() {
         console.error('Fetch exception:', err);
         bookingsTableBody.innerHTML = `<tr><td colspan="5" class="table-no-data-row">An unexpected error occurred.</td></tr>`;
     }
+}
+
+async function fetchVisits() {
+    if (!supabaseClient) return;
+
+    try {
+        const { data, error } = await supabaseClient
+            .from('site_visits')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('Error fetching visits:', error.message);
+            if (visitorsTableBody) {
+                visitorsTableBody.innerHTML = `<tr><td colspan="5" class="table-no-data-row">Error fetching data. Check RLS Policies.</td></tr>`;
+            }
+            return;
+        }
+
+        visitsData = data || [];
+        updateVisitsView();
+    } catch (err) {
+        console.error('Fetch visits exception:', err);
+        if (visitorsTableBody) {
+            visitorsTableBody.innerHTML = `<tr><td colspan="5" class="table-no-data-row">An unexpected error occurred.</td></tr>`;
+        }
+    }
+}
+
+function updateVisitsView() {
+    if (kpiTotalVisitors) {
+        kpiTotalVisitors.textContent = visitsData.length;
+    }
+    renderVisitsTable();
+}
+
+function renderVisitsTable() {
+    if (!visitorsTableBody) return;
+    visitorsTableBody.innerHTML = '';
+
+    if (visitsData.length === 0) {
+        visitorsTableBody.innerHTML = `<tr><td colspan="5" class="table-loading-row" style="color: var(--text-muted);">No visitors recorded yet.</td></tr>`;
+        return;
+    }
+
+    const recentVisits = visitsData.slice(0, 100);
+
+    recentVisits.forEach(visit => {
+        const row = document.createElement('tr');
+        
+        const date = new Date(visit.created_at);
+        const formattedDate = date.toLocaleDateString('en-IN', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        }) + ' ' + date.toLocaleTimeString('en-IN', {
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        const parsedUA = parseUserAgent(visit.user_agent);
+
+        const city = visit.city || 'Unknown';
+        const region = visit.region || 'Unknown';
+        const country = visit.country || 'Unknown';
+        const locationStr = (city === 'Unknown' && region === 'Unknown') 
+            ? 'Unknown Location' 
+            : `${city}, ${region}`;
+
+        row.innerHTML = `
+            <td class="date-cell">${formattedDate}</td>
+            <td style="font-family: monospace; font-weight: 500;">${escapeHtml(visit.ip_address)}</td>
+            <td>
+                <span class="location-badge" style="font-weight: 600; color: var(--primary-green);">
+                    ${escapeHtml(country)}
+                </span>
+            </td>
+            <td>${escapeHtml(locationStr)}</td>
+            <td style="font-size: 0.85rem; color: var(--text-muted);" title="${escapeHtml(visit.user_agent)}">${escapeHtml(parsedUA)}</td>
+        `;
+
+        visitorsTableBody.appendChild(row);
+    });
+}
+
+function parseUserAgent(ua) {
+    if (!ua) return 'Unknown';
+    
+    let os = 'Unknown';
+    let browser = 'Unknown';
+    
+    if (ua.indexOf('Windows') !== -1) os = 'Windows';
+    else if (ua.indexOf('Macintosh') !== -1) os = 'macOS';
+    else if (ua.indexOf('iPhone') !== -1) os = 'iOS';
+    else if (ua.indexOf('Android') !== -1) os = 'Android';
+    else if (ua.indexOf('Linux') !== -1) os = 'Linux';
+    
+    if (ua.indexOf('Firefox') !== -1) browser = 'Firefox';
+    else if (ua.indexOf('SamsungBrowser') !== -1) browser = 'Samsung Browser';
+    else if (ua.indexOf('Chrome') !== -1) browser = 'Chrome';
+    else if (ua.indexOf('Safari') !== -1) browser = 'Safari';
+    else if (ua.indexOf('Edge') !== -1 || ua.indexOf('Edg') !== -1) browser = 'Edge';
+    else if (ua.indexOf('Trident') !== -1) browser = 'Internet Explorer';
+    
+    if (os !== 'Unknown' && browser !== 'Unknown') {
+        return `${browser} on ${os}`;
+    } else if (os !== 'Unknown') {
+        return `Browser on ${os}`;
+    } else if (browser !== 'Unknown') {
+        return browser;
+    }
+    return 'Unknown Device';
 }
 
 // Update stats, charts, and bookings list
@@ -432,7 +555,7 @@ function escapeHtml(str) {
 function initRealtimeSubscription() {
     if (!supabaseClient) return;
 
-    realtimeChannel = supabaseClient.channel('prebookings-live-channel')
+    realtimeChannel = supabaseClient.channel('dashboard-live-channel')
         .on('postgres_changes', {
             event: 'INSERT',
             schema: 'public',
@@ -458,6 +581,24 @@ function initRealtimeSubscription() {
             const deletedId = payload.old.id;
             bookingsData = bookingsData.filter(booking => booking.id !== deletedId);
             updateDashboardView();
+        })
+        .on('postgres_changes', {
+            event: '*',
+            schema: 'public',
+            table: 'site_visits'
+        }, payload => {
+            console.log('Real-time Visitor Payload:', payload);
+            if (payload.eventType === 'INSERT') {
+                visitsData.unshift(payload.new);
+                updateVisitsView();
+            } else if (payload.eventType === 'DELETE') {
+                if (payload.old && payload.old.id) {
+                    visitsData = visitsData.filter(visit => visit.id !== payload.old.id);
+                } else {
+                    fetchVisits();
+                }
+                updateVisitsView();
+            }
         })
         .subscribe();
 }
@@ -530,3 +671,32 @@ window.deleteBooking = async function(id) {
         alert('An unexpected error occurred while deleting.');
     }
 };
+
+// 12. Clear Visitor Logs Action (authenticated users only via RLS)
+if (clearVisitsBtn) {
+    clearVisitsBtn.addEventListener('click', async () => {
+        if (!supabaseClient) return;
+
+        const confirmClear = confirm("Are you sure you want to clear ALL visitor logs? This action cannot be undone.");
+        if (!confirmClear) return;
+
+        try {
+            const { error } = await supabaseClient
+                .from('site_visits')
+                .delete()
+                .gt('id', 0);
+
+            if (error) {
+                console.error('Error clearing visits:', error.message);
+                alert('Failed to clear visitor logs: ' + error.message);
+            } else {
+                visitsData = [];
+                updateVisitsView();
+                alert('Visitor logs cleared successfully.');
+            }
+        } catch (err) {
+            console.error('Clear visits exception:', err);
+            alert('An unexpected error occurred while clearing visitor logs.');
+        }
+    });
+}

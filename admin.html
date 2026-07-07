@@ -90,6 +90,18 @@
                     </div>
                 </div>
 
+                <!-- KPI: Total Visitors -->
+                <div class="kpi-card">
+                    <div class="kpi-icon-row">
+                        <span class="kpi-icon icon-blue"><i class="fa-solid fa-eye"></i></span>
+                        <span class="kpi-change"><i class="fa-solid fa-circle"></i> Live</span>
+                    </div>
+                    <div class="kpi-body">
+                        <h3>Total Visitors</h3>
+                        <p id="kpi-total-visitors" class="kpi-number">0</p>
+                    </div>
+                </div>
+
                 <!-- KPI 2: Total Litres -->
                 <div class="kpi-card">
                     <div class="kpi-icon-row">
@@ -174,6 +186,44 @@
                                 <tr>
                                     <td colspan="5" class="table-loading-row">
                                         <i class="fa-solid fa-spinner fa-spin"></i> Loading pre-bookings list...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Detailed Visitors List -->
+            <section class="visitors-list-section">
+                <div class="list-card">
+                    <div class="list-card-header">
+                        <div class="list-title-area">
+                            <h3>Visitor Registry</h3>
+                            <p>Recent visitors and their locations</p>
+                        </div>
+                        
+                        <div class="list-actions">
+                            <button id="clear-visits-btn" class="btn btn-secondary btn-sm" style="border-color: var(--danger); color: var(--danger);"><i class="fa-regular fa-trash-can"></i> Clear Log</button>
+                        </div>
+                    </div>
+
+                    <!-- Visitors Responsive Table -->
+                    <div class="table-wrapper">
+                        <table id="visitors-table">
+                            <thead>
+                                <tr>
+                                    <th>Date & Time</th>
+                                    <th>IP Address</th>
+                                    <th>Country</th>
+                                    <th>Region & City</th>
+                                    <th>Device / Browser</th>
+                                </tr>
+                            </thead>
+                            <tbody id="visitors-table-body">
+                                <tr>
+                                    <td colspan="5" class="table-loading-row">
+                                        <i class="fa-solid fa-spinner fa-spin"></i> Loading visitors list...
                                     </td>
                                 </tr>
                             </tbody>
