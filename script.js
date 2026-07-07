@@ -2,6 +2,16 @@
    Ghar Aangan - Interactivity and Form Logic Script
    ========================================================================== */
 
+// Supabase Configuration
+// Replace these placeholders with your actual Supabase URL and Anon Key
+const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+let supabaseClient = null;
+
+if (typeof window.supabase !== 'undefined' && SUPABASE_URL !== 'YOUR_SUPABASE_URL') {
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     initCountdown();
     initScrollAnimations();
@@ -197,8 +207,8 @@ function initFormValidation() {
         btnText.classList.add('hidden');
         btnSpinner.classList.remove('hidden');
 
-        // Simulate secure API/server processing
-        setTimeout(() => {
+        // Helper function to complete pre-booking in UI
+        function completePrebooking() {
             // Save booking locally
             bookings.push({ name, mobile, quantity, date: new Date().toISOString() });
             localStorage.setItem('gharaangan_prebookings', JSON.stringify(bookings));
@@ -221,7 +231,41 @@ function initFormValidation() {
             submitBtn.disabled = false;
             btnText.classList.remove('hidden');
             btnSpinner.classList.add('hidden');
-        }, 1500);
+        }
+
+        if (supabaseClient) {
+            // Real Supabase insert query
+            supabaseClient
+                .from('prebookings')
+                .insert([
+                    { full_name: name, mobile_number: mobile, quantity: quantity }
+                ])
+                .then(({ error }) => {
+                    if (error) {
+                        console.error('Supabase Error:', error);
+                        alert('Something went wrong. Please check connection or try again.');
+                        
+                        // Restore button state on error
+                        submitBtn.disabled = false;
+                        btnText.classList.remove('hidden');
+                        btnSpinner.classList.add('hidden');
+                    } else {
+                        completePrebooking();
+                    }
+                })
+                .catch(err => {
+                    console.error('Execution Error:', err);
+                    alert('Could not submit booking. Please try again.');
+                    
+                    submitBtn.disabled = false;
+                    btnText.classList.remove('hidden');
+                    btnSpinner.classList.add('hidden');
+                });
+        } else {
+            // Local fallback simulation (when Supabase URL is not replaced yet)
+            console.log('Running local fallback simulation. Setup Supabase project keys to link.');
+            setTimeout(completePrebooking, 1500);
+        }
     });
 
     // Close Modal on Button click or backdrop click
