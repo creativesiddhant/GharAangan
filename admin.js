@@ -52,12 +52,41 @@ const tableSearchInput = document.getElementById('table-search');
 const exportCsvBtn = document.getElementById('export-csv-btn');
 const bookingsTableBody = document.getElementById('bookings-table-body');
 
+/* ==========================================================================
+   Cookie Helpers for Persistent Sessions
+   ========================================================================== */
+function setCookie(name, value, days) {
+    let expires = "";
+    if (days) {
+        const date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = "; expires=" + date.toUTCString();
+    }
+    document.cookie = name + "=" + encodeURIComponent(value) + expires + "; path=/; SameSite=Lax; Secure";
+}
+
+function getCookie(name) {
+    const nameEQ = name + "=";
+    const ca = document.cookie.split(';');
+    for(let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+        if (c.indexOf(nameEQ) === 0) return decodeURIComponent(c.substring(nameEQ.length, c.length));
+    }
+    return null;
+}
+
+function eraseCookie(name) {   
+    document.cookie = name + '=; Max-Age=-99999999; path=/; SameSite=Lax; Secure';
+}
+
 // Quick session check to prevent login screen flash on page refresh
-const hasCachedSession = Object.keys(localStorage).some(key => key.includes('auth-token') || key.includes('supabase'));
+const hasCachedSession = Object.keys(localStorage).some(key => key.includes('auth-token') || key.includes('supabase')) || (getCookie('sb-admin-access-token') && getCookie('sb-admin-refresh-token'));
 if (hasCachedSession && loginContainer && dashboardContainer) {
     loginContainer.classList.add('hidden');
     dashboardContainer.classList.remove('hidden');
 }
+
 
 /* ==========================================================================
    4. Authentication State Watcher & Session Restoration
@@ -66,10 +95,39 @@ async function restoreSession() {
     if (!supabaseClient) return;
     
     try {
+        let currentSession = null;
+        
+        // 1. Get the current session from Supabase memory/localStorage
         const { data: { session } } = await supabaseClient.auth.getSession();
-        if (session && session.user) {
-            console.log('Session restored successfully:', session.user.email);
-            adminEmailDisplay.textContent = session.user.email;
+        currentSession = session;
+        
+        // 2. If no session is found, check if we have persistent cookies to restore
+        if (!currentSession) {
+            const accessToken = getCookie('sb-admin-access-token');
+            const refreshToken = getCookie('sb-admin-refresh-token');
+            
+            if (accessToken && refreshToken) {
+                console.log('Attempting to restore session from cookies...');
+                const { data, error } = await supabaseClient.auth.setSession({
+                    access_token: accessToken,
+                    refresh_token: refreshToken
+                });
+                
+                if (!error && data.session) {
+                    currentSession = data.session;
+                    console.log('Session successfully restored from cookies.');
+                } else {
+                    console.warn('Failed to restore session from cookies:', error ? error.message : 'No session returned');
+                    eraseCookie('sb-admin-access-token');
+                    eraseCookie('sb-admin-refresh-token');
+                }
+            }
+        }
+        
+        // 3. Handle session state UI updates
+        if (currentSession && currentSession.user) {
+            console.log('Session restored successfully:', currentSession.user.email);
+            adminEmailDisplay.textContent = currentSession.user.email;
             loginContainer.classList.add('hidden');
             dashboardContainer.classList.remove('hidden');
             if (bookingsData.length === 0) {
@@ -99,6 +157,10 @@ if (supabaseClient) {
     supabaseClient.auth.onAuthStateChange((event, session) => {
         console.log('Auth State Changed:', event, session ? session.user.email : 'null');
         if (session && session.user) {
+            // Save session tokens to cookies (valid for 7 days)
+            setCookie('sb-admin-access-token', session.access_token, 7);
+            setCookie('sb-admin-refresh-token', session.refresh_token, 7);
+
             // User is authenticated successfully
             adminEmailDisplay.textContent = session.user.email;
             loginContainer.classList.add('hidden');
@@ -116,8 +178,12 @@ if (supabaseClient) {
             if (!realtimeChannel) {
                 initRealtimeSubscription();
             }
-        } else if (event === 'SIGNED_OUT') {
-            // Explicitly logged out
+        } else if (event === 'SIGNED_OUT' || (event !== 'INITIAL_SESSION' && !session)) {
+            // Erase cookies
+            eraseCookie('sb-admin-access-token');
+            eraseCookie('sb-admin-refresh-token');
+
+            // Explicitly logged out or no session
             loginContainer.classList.remove('hidden');
             dashboardContainer.classList.add('hidden');
             bookingsData = [];
