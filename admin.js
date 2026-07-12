@@ -11,6 +11,62 @@ if (typeof window.supabase !== 'undefined') {
     supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 }
 
+// Indian States and Cities dataset for auto-complete select option
+const indianStatesAndCities = {
+    "Andhra Pradesh": ["Visakhapatnam", "Vijayawada", "Guntur", "Nellore", "Kurnool", "Rajahmundry", "Tirupati", "Kakinada", "Anantapur", "Eluru"],
+    "Arunachal Pradesh": ["Itanagar", "Naharlagun", "Pasighat", "Namsai", "Tawang"],
+    "Assam": ["Guwahati", "Silchar", "Dibrugarh", "Jorhat", "Nagaon", "Tinsukia", "Tezpur", "Bongaigaon"],
+    "Bihar": ["Patna", "Gaya", "Bhagalpur", "Muzaffarpur", "Purnia", "Darbhanga", "Bihar Sharif", "Arrah", "Begusarai", "Katihar"],
+    "Chandigarh": ["Chandigarh"],
+    "Chhattisgarh": ["Raipur", "Bhilai", "Bilaspur", "Korba", "Rajnandgaon", "Jagdalpur", "Ambikapur", "Dhamtari"],
+    "Dadra and Nagar Haveli and Daman and Diu": ["Silvassa", "Daman", "Diu"],
+    "Delhi": ["New Delhi", "Delhi Cantt.", "Dwarka", "Rohini", "Vasant Kunj", "Saket", "Janakpuri", "Karol Bagh", "Shahdara"],
+    "Goa": ["Panaji", "Margao", "Vasco da Gama", "Mapusa", "Ponda"],
+    "Gujarat": ["Ahmedabad", "Surat", "Vadodara", "Rajkot", "Bhavnagar", "Jamnagar", "Gandhinagar", "Junagadh", "Gandhidham", "Anand", "Morbi"],
+    "Haryana": ["Faridabad", "Gurugram", "Panipat", "Ambala", "Yamunanagar", "Rohtak", "Hisar", "Karnal", "Sonipat", "Panchkula"],
+    "Himachal Pradesh": ["Shimla", "Dharamshala", "Solan", "Mandi", "Nahan", "Baddi"],
+    "Jammu and Kashmir": ["Srinagar", "Jammu", "Anantnag", "Baramulla", "Kathua", "Udhampur"],
+    "Jharkhand": ["Jamshedpur", "Dhanbad", "Ranchi", "Bokaro Steel City", "Deoghar", "Phusro", "Hazaribagh", "Giridih"],
+    "Karnataka": ["Bengaluru", "Hubballi-Dharwad", "Mysuru", "Kalaburagi", "Mangaluru", "Belagavi", "Davangere", "Ballari", "Tumakuru", "Shivamogga"],
+    "Kerala": ["Thiruvananthapuram", "Kochi", "Kozhikode", "Kollam", "Thrissur", "Alappuzha", "Palakkad", "Malappuram", "Kannur"],
+    "Ladakh": ["Leh", "Kargil"],
+    "Madhya Pradesh": ["Indore", "Bhopal", "Jabalpur", "Gwalior", "Ujjain", "Sagar", "Dewas", "Satna", "Ratlam", "Rewa"],
+    "Maharashtra": ["Mumbai", "Pune", "Nagpur", "Thane", "Pimpri-Chinchwad", "Nashik", "Kalyan-Dombivli", "Vasai-Virar", "Aurangabad", "Navi Mumbai", "Solapur", "Kolhapur"],
+    "Manipur": ["Imphal", "Thoubal", "Kakching"],
+    "Meghalaya": ["Shillong", "Tura", "Jowai"],
+    "Mizoram": ["Aizawl", "Lunglei", "Champhai"],
+    "Nagaland": ["Dimapur", "Kohima", "Mokokchung", "Wokha"],
+    "Odisha": ["Bhubaneswar", "Cuttack", "Rourkela", "Berhampur", "Sambalpur", "Puri", "Balasore", "Bhadrak", "Baripada"],
+    "Puducherry": ["Puducherry", "Karaikal", "Mahe", "Yanam"],
+    "Punjab": ["Ludhiana", "Amritsar", "Jalandhar", "Patiala", "Bathinda", "Mohali", "Hoshiarpur", "Pathankot", "Moga"],
+    "Rajasthan": ["Jaipur", "Jodhpur", "Kota", "Bikaner", "Ajmer", "Udaipur", "Bhilwara", "Alwar", "Sikar", "Sri Ganganagar"],
+    "Sikkim": ["Gangtok", "Namchi", "Gyalshing"],
+    "Tamil Nadu": ["Chennai", "Coimbatore", "Madurai", "Tiruchirappalli", "Salem", "Tiruppur", "Erode", "Vellore", "Thoothukudi", "Nagercoil"],
+    "Telangana": ["Hyderabad", "Warangal", "Nizamabad", "Karimnagar", "Ramagundam", "Khammam", "Mahbubnagar"],
+    "Tripura": ["Agartala", "Dharmanagar", "Udaipur"],
+    "Uttar Pradesh": ["Lucknow", "Kanpur", "Ghaziabad", "Agra", "Meerut", "Varanasi", "Noida", "Greater Noida", "Prayagraj", "Bareilly", "Aligarh", "Moradabad", "Saharanpur", "Gorakhpur", "Jhansi"],
+    "Uttarakhand": ["Dehradun", "Haridwar", "Haldwani", "Roorkee", "Rudrapur", "Kashipur", "Rishikesh"],
+    "West Bengal": ["Kolkata", "Howrah", "Darjeeling", "Siliguri", "Asansol", "Durgapur", "Maheshtala", "Rajpur Sonarpur", "Gopalpur", "Bhatpara", "Kharagpur"]
+};
+
+function bindStateCityAutocomplete(stateElement, cityElement, datalistElement) {
+    if (!stateElement || !cityElement || !datalistElement) return;
+
+    stateElement.addEventListener('change', () => {
+        const selectedState = stateElement.value;
+        cityElement.value = ''; // clear previous city selection
+        datalistElement.innerHTML = ''; // clear previous options
+
+        if (selectedState && indianStatesAndCities[selectedState]) {
+            indianStatesAndCities[selectedState].forEach(city => {
+                const option = document.createElement('option');
+                option.value = city;
+                datalistElement.appendChild(option);
+            });
+        }
+    });
+}
+
 // 2. Dashboard Global State
 let bookingsData = [];
 let visitsData = [];
@@ -1160,8 +1216,25 @@ window.openEditBookingModal = function(id) {
     editBookingIdInput.value = booking.id;
     editNameInput.value = booking.full_name || '';
     editMobileInput.value = booking.mobile_number || '';
+    
+    // Select state dropdown value
+    const stateVal = booking.state || '';
+    editStateInput.value = stateVal;
+    
+    // Clear datalist and populate it with cities of this state
+    const editCityDatalist = document.getElementById('edit-city-datalist');
+    if (editCityDatalist) {
+        editCityDatalist.innerHTML = '';
+        if (stateVal && indianStatesAndCities[stateVal]) {
+            indianStatesAndCities[stateVal].forEach(city => {
+                const option = document.createElement('option');
+                option.value = city;
+                editCityDatalist.appendChild(option);
+            });
+        }
+    }
+    
     editCityInput.value = booking.city || '';
-    editStateInput.value = booking.state || '';
     editQuantitySelect.value = booking.quantity || '';
 
     // Show modal
@@ -1283,4 +1356,18 @@ if (editBookingForm) {
         }
     });
 }
+
+// Bind autocomplete for Manual Booking Modal
+bindStateCityAutocomplete(
+    document.getElementById('manual-state'),
+    document.getElementById('manual-city'),
+    document.getElementById('manual-city-datalist')
+);
+
+// Bind autocomplete for Edit Booking Modal
+bindStateCityAutocomplete(
+    document.getElementById('edit-state'),
+    document.getElementById('edit-city'),
+    document.getElementById('edit-city-datalist')
+);
 
