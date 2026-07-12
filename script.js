@@ -168,11 +168,7 @@ function initFormValidation() {
         });
     }
 
-    if (stateInput) {
-        stateInput.addEventListener('input', () => {
-            validateField(stateInput, stateInput.value.trim().length > 1, 'state-error');
-        });
-    }
+
 
     function validateField(inputElement, condition, errorId) {
         const group = inputElement.closest('.input-group');
@@ -195,7 +191,7 @@ function initFormValidation() {
         const isMobileValid = validateField(mobileInput, /^[6-9]\d{9}$/.test(mobileInput.value), 'mobile-error');
         const isQtyValid = validateField(quantitySelect, quantitySelect.value !== '', 'quantity-error');
         const isCityValid = cityInput ? validateField(cityInput, cityInput.value.trim().length > 1, 'city-error') : true;
-        const isStateValid = stateInput ? validateField(stateInput, stateInput.value.trim().length > 1, 'state-error') : true;
+        const isStateValid = true; // State is optional
 
         if (!isNameValid || !isMobileValid || !isQtyValid || !isCityValid || !isStateValid) {
             // Find first error group and focus it
