@@ -170,7 +170,10 @@
                                 <i class="fa-solid fa-magnifying-glass"></i>
                                 <input type="text" id="table-search" placeholder="Search by name or mobile...">
                             </div>
-                            <button id="export-csv-btn" class="btn btn-secondary btn-sm"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
+                            <div class="action-buttons-group">
+                                <button id="add-booking-btn" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> Add Booking</button>
+                                <button id="export-csv-btn" class="btn btn-secondary btn-sm"><i class="fa-solid fa-file-csv"></i> Export CSV</button>
+                            </div>
                         </div>
                     </div>
 
@@ -237,6 +240,52 @@
             </section>
 
         </main>
+    </div>
+
+    <!-- Add Manual Booking Modal -->
+    <div id="add-booking-modal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-card-header">
+                <h3>Add Manual Booking</h3>
+                <button type="button" class="modal-close-x" id="close-modal-x-btn" aria-label="Close dialog">&times;</button>
+            </div>
+            
+            <form id="manual-booking-form" novalidate>
+                <div class="input-group" id="manual-name-group">
+                    <label for="manual-full-name"><i class="fa-regular fa-user"></i> Full Name</label>
+                    <input type="text" id="manual-full-name" placeholder="e.g. Ramesh Kumar" required>
+                    <span class="error-msg" id="manual-name-error">Please enter the customer's full name</span>
+                </div>
+                
+                <div class="input-group" id="manual-mobile-group">
+                    <label for="manual-mobile-number"><i class="fa-solid fa-phone"></i> Mobile Number</label>
+                    <input type="tel" id="manual-mobile-number" placeholder="10-digit mobile number" required maxlength="10">
+                    <span class="error-msg" id="manual-mobile-error">Please enter a valid 10-digit mobile number starting with 6-9</span>
+                </div>
+                
+                <div class="input-group" id="manual-quantity-group">
+                    <label for="manual-quantity"><i class="fa-solid fa-bucket"></i> Ghee Quantity</label>
+                    <div class="custom-select-wrapper">
+                        <select id="manual-quantity" required>
+                            <option value="" disabled selected>Select quantity</option>
+                            <option value="500ml">500ml Glass Jar</option>
+                            <option value="1 Litre">1 Litre Premium Tin</option>
+                            <option value="2 Litres">2 Litres (2 x 1L Tins)</option>
+                            <option value="5 Litres">5 Litres (Family Pack)</option>
+                        </select>
+                    </div>
+                    <span class="error-msg" id="manual-quantity-error">Please select a quantity</span>
+                </div>
+                
+                <div class="modal-actions" style="margin-top: 30px; display: flex; gap: 12px; justify-content: flex-end;">
+                    <button type="button" id="close-add-booking-modal" class="btn btn-secondary btn-sm" style="border-radius: var(--border-radius-md);">Cancel</button>
+                    <button type="submit" id="submit-manual-booking-btn" class="btn btn-primary btn-sm" style="border-radius: var(--border-radius-md);">
+                        <span class="btn-text">Add Booking</span>
+                        <span class="btn-spinner hidden"><i class="fa-solid fa-spinner fa-spin"></i> Saving...</span>
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <!-- Supabase Client CDN -->

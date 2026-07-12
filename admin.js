@@ -805,3 +805,224 @@ if (clearVisitsBtn) {
         }
     });
 }
+
+/* ==========================================================================
+   13. Add Manual Booking Functionality
+   ========================================================================== */
+const addBookingModal = document.getElementById('add-booking-modal');
+const addBookingBtn = document.getElementById('add-booking-btn');
+const closeBookingModalXBtn = document.getElementById('close-modal-x-btn');
+const closeBookingModalBtn = document.getElementById('close-add-booking-modal');
+const manualBookingForm = document.getElementById('manual-booking-form');
+
+const manualNameInput = document.getElementById('manual-full-name');
+const manualMobileInput = document.getElementById('manual-mobile-number');
+const manualQuantitySelect = document.getElementById('manual-quantity');
+
+const manualNameGroup = document.getElementById('manual-name-group');
+const manualMobileGroup = document.getElementById('manual-mobile-group');
+const manualQuantityGroup = document.getElementById('manual-quantity-group');
+
+const submitManualBookingBtn = document.getElementById('submit-manual-booking-btn');
+const submitBtnText = submitManualBookingBtn ? submitManualBookingBtn.querySelector('.btn-text') : null;
+const submitBtnSpinner = submitManualBookingBtn ? submitManualBookingBtn.querySelector('.btn-spinner') : null;
+
+// Toggle Modal Open
+if (addBookingBtn) {
+    addBookingBtn.addEventListener('click', () => {
+        if (addBookingModal) {
+            // Reset validation states and inputs
+            resetManualForm();
+            addBookingModal.classList.add('active');
+        }
+    });
+}
+
+// Toggle Modal Close
+function closeManualBookingModal() {
+    if (addBookingModal) {
+        addBookingModal.classList.remove('active');
+    }
+}
+
+if (closeBookingModalXBtn) {
+    closeBookingModalXBtn.addEventListener('click', closeManualBookingModal);
+}
+
+if (closeBookingModalBtn) {
+    closeBookingModalBtn.addEventListener('click', closeManualBookingModal);
+}
+
+// Close Modal on backdrop click
+if (addBookingModal) {
+    addBookingModal.addEventListener('click', (e) => {
+        if (e.target === addBookingModal) {
+            closeManualBookingModal();
+        }
+    });
+}
+
+// Reset Form Inputs and Errors
+function resetManualForm() {
+    if (manualBookingForm) {
+        manualBookingForm.reset();
+    }
+    
+    // Clear validation error classes
+    if (manualNameGroup) manualNameGroup.classList.remove('invalid');
+    if (manualMobileGroup) manualMobileGroup.classList.remove('invalid');
+    if (manualQuantityGroup) manualQuantityGroup.classList.remove('invalid');
+    
+    // Restore button state
+    if (submitManualBookingBtn) {
+        submitManualBookingBtn.disabled = false;
+    }
+    if (submitBtnText) {
+        submitBtnText.classList.remove('hidden');
+    }
+    if (submitBtnSpinner) {
+        submitBtnSpinner.classList.add('hidden');
+    }
+}
+
+// Form Validation and Submission
+if (manualBookingForm) {
+    manualBookingForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        let isValid = true;
+        
+        const fullName = manualNameInput.value.trim();
+        const mobileNumber = manualMobileInput.value.trim();
+        const quantity = manualQuantitySelect.value;
+        
+        // 1. Validate Name
+        if (!fullName) {
+            if (manualNameGroup) manualNameGroup.classList.add('invalid');
+            isValid = false;
+        } else {
+            if (manualNameGroup) manualNameGroup.classList.remove('invalid');
+        }
+        
+        // 2. Validate Mobile (10-digit, starting with 6-9)
+        const mobilePattern = /^[6-9]\d{9}$/;
+        if (!mobileNumber || !mobilePattern.test(mobileNumber)) {
+            if (manualMobileGroup) manualMobileGroup.classList.add('invalid');
+            isValid = false;
+        } else {
+            if (manualMobileGroup) manualMobileGroup.classList.remove('invalid');
+        }
+        
+        // 3. Validate Quantity
+        if (!quantity) {
+            if (manualQuantityGroup) manualQuantityGroup.classList.add('invalid');
+            isValid = false;
+        } else {
+            if (manualQuantityGroup) manualQuantityGroup.classList.remove('invalid');
+        }
+        
+        if (!isValid) return;
+        
+        // Disable button and show spinner
+        if (submitManualBookingBtn) {
+            submitManualBookingBtn.disabled = true;
+        }
+        if (submitBtnText) {
+            submitBtnText.classList.add('hidden');
+        }
+        if (submitBtnSpinner) {
+            submitBtnSpinner.classList.remove('hidden');
+        }
+        
+        try {
+            if (!supabaseClient) {
+                alert('Supabase client is not initialized.');
+                resetManualForm();
+                return;
+            }
+            
+            // Insert new booking
+            const { data, error } = await supabaseClient
+                .from('prebookings')
+                .insert([
+                    { full_name: fullName, mobile_number: mobileNumber, quantity: quantity }
+                ])
+                .select();
+                
+            if (error) {
+                console.error('Error inserting manual booking:', error.message);
+                alert('Failed to add pre-booking: ' + error.message);
+                
+                // Restore button state
+                if (submitManualBookingBtn) {
+                    submitManualBookingBtn.disabled = false;
+                }
+                if (submitBtnText) {
+                    submitBtnText.classList.remove('hidden');
+                }
+                if (submitBtnSpinner) {
+                    submitBtnSpinner.classList.add('hidden');
+                }
+            } else {
+                // Success: Close modal and show success alert
+                closeManualBookingModal();
+                
+                // If real-time did not update (e.g. not connected), we manually reload
+                // Realtime will normally add the inserted item to `bookingsData`. But doing a manual fetch ensures consistency.
+                if (data && data.length > 0) {
+                    // Check if it's already added by realtime. If not, add it or fetch all.
+                    const alreadyExists = bookingsData.some(b => b.id === data[0].id);
+                    if (!alreadyExists) {
+                        bookingsData.unshift(data[0]);
+                        updateDashboardView();
+                    }
+                } else {
+                    await fetchBookings();
+                }
+                
+                alert('Pre-booking successfully recorded!');
+            }
+        } catch (err) {
+            console.error('Insert manual booking exception:', err);
+            alert('An unexpected error occurred while adding manual booking.');
+            
+            // Restore button state
+            if (submitManualBookingBtn) {
+                submitManualBookingBtn.disabled = false;
+            }
+            if (submitBtnText) {
+                submitBtnText.classList.remove('hidden');
+            }
+            if (submitBtnSpinner) {
+                submitBtnSpinner.classList.add('hidden');
+            }
+        }
+    });
+}
+
+// Clear invalid class on input/change
+if (manualNameInput) {
+    manualNameInput.addEventListener('input', () => {
+        if (manualNameInput.value.trim()) {
+            if (manualNameGroup) manualNameGroup.classList.remove('invalid');
+        }
+    });
+}
+
+if (manualMobileInput) {
+    manualMobileInput.addEventListener('input', () => {
+        const mobilePattern = /^[6-9]\d{9}$/;
+        if (mobilePattern.test(manualMobileInput.value.trim())) {
+            if (manualMobileGroup) manualMobileGroup.classList.remove('invalid');
+        }
+    });
+}
+
+if (manualQuantitySelect) {
+    manualQuantitySelect.addEventListener('change', () => {
+        if (manualQuantitySelect.value) {
+            if (manualQuantityGroup) manualQuantityGroup.classList.remove('invalid');
+        }
+    });
+}
+
