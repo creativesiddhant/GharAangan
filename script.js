@@ -534,12 +534,12 @@ function initRecentBookingsNotifications() {
             clearTimeout(toastTimeout);
         });
 
-        // Auto fade out timer (6 seconds display time)
+        // Auto fade out timer (4 seconds display time)
         toastTimeout = setTimeout(() => {
             toast.classList.remove('active');
             setTimeout(() => toast.remove(), 600);
             if (currentToast === toast) currentToast = null;
-        }, 6000);
+        }, 4000);
     }
 
     // Pull from real-time queue or pick sequentially from previous/historic pool
@@ -588,15 +588,24 @@ function initRecentBookingsNotifications() {
     loadHistoricBookings().then(() => {
         if (bookingsPool.length === 0) return;
         
-        // Initial delay before showing the first booking
+        let historicCount = 0;
+        const targetHistoricCount = 4; // Show 4 historic notifications initially to create hype
+        
+        // Initial delay before showing the first booking (10 seconds)
         setTimeout(() => {
             showNextNotification();
+            historicCount++;
             
-            // Loop at an elegant, premium interval (every 45 seconds) to avoid spamming
-            setInterval(() => {
+            // Show the remaining 3 notifications in a fast sequence (every 5 seconds)
+            const intervalId = setInterval(() => {
+                if (historicCount >= targetHistoricCount || bookingsPool.length === 0) {
+                    clearInterval(intervalId); // Stop automatic cycle completely so they can enjoy the website
+                    return;
+                }
                 showNextNotification();
-            }, 45000);
-        }, 8000);
+                historicCount++;
+            }, 5000);
+        }, 10000);
     });
 
     // Subscribe to live inserts via Supabase Realtime channel
