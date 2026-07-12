@@ -50,12 +50,18 @@ const indianStatesAndCities = {
     "West Bengal": ["Kolkata", "Howrah", "Darjeeling", "Siliguri", "Asansol", "Durgapur", "Maheshtala", "Rajpur Sonarpur", "Gopalpur", "Bhatpara", "Kharagpur"]
 };
 
-function bindStateCityAutocomplete(stateElement, cityElement) {
+function bindStateCityAutocomplete(stateElement, cityElement, manualGroupElement, manualInputElement) {
     if (!stateElement || !cityElement) return;
 
     stateElement.addEventListener('change', () => {
         const selectedState = stateElement.value;
         cityElement.innerHTML = ''; // clear previous options
+        
+        if (manualGroupElement) manualGroupElement.classList.add('hidden');
+        if (manualInputElement) {
+            manualInputElement.value = '';
+            manualInputElement.required = false;
+        }
 
         if (selectedState && indianStatesAndCities[selectedState]) {
             // Add placeholder option
@@ -72,6 +78,12 @@ function bindStateCityAutocomplete(stateElement, cityElement) {
                 option.textContent = city;
                 cityElement.appendChild(option);
             });
+
+            // Add Other option
+            const otherOpt = document.createElement('option');
+            otherOpt.value = 'Other';
+            otherOpt.textContent = 'Other (Type manually)';
+            cityElement.appendChild(otherOpt);
         } else {
             const defaultOpt = document.createElement('option');
             defaultOpt.value = '';
@@ -84,6 +96,20 @@ function bindStateCityAutocomplete(stateElement, cityElement) {
         // Trigger change event to clear errors if needed
         cityElement.dispatchEvent(new Event('change'));
     });
+
+    if (manualGroupElement && manualInputElement) {
+        cityElement.addEventListener('change', () => {
+            if (cityElement.value === 'Other') {
+                manualGroupElement.classList.remove('hidden');
+                manualInputElement.required = true;
+                manualInputElement.focus();
+            } else {
+                manualGroupElement.classList.add('hidden');
+                manualInputElement.value = '';
+                manualInputElement.required = false;
+            }
+        });
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -208,6 +234,8 @@ function initFormValidation() {
     const quantitySelect = document.getElementById('ghee-quantity');
     const cityInput = document.getElementById('city');
     const stateInput = document.getElementById('state');
+    const cityManualInput = document.getElementById('city-manual');
+    const cityManualGroup = document.getElementById('city-manual-group');
     const submitBtn = document.getElementById('submit-btn');
     const btnText = submitBtn.querySelector('.btn-text');
     const btnSpinner = submitBtn.querySelector('.btn-spinner');
@@ -221,7 +249,7 @@ function initFormValidation() {
     if (!form) return;
 
     // Initialize State & City dynamic dropdown binding
-    bindStateCityAutocomplete(stateInput, cityInput);
+    bindStateCityAutocomplete(stateInput, cityInput, cityManualGroup, cityManualInput);
 
     // Direct input check helpers
     nameInput.addEventListener('input', () => {
@@ -241,7 +269,17 @@ function initFormValidation() {
 
     if (cityInput) {
         cityInput.addEventListener('change', () => {
-            validateField(cityInput, cityInput.value.trim().length > 1, 'city-error');
+            if (cityInput.value === 'Other') {
+                validateField(cityManualInput, cityManualInput.value.trim().length > 1, 'city-manual-error');
+            } else {
+                validateField(cityInput, cityInput.value.trim().length > 1, 'city-error');
+            }
+        });
+    }
+
+    if (cityManualInput) {
+        cityManualInput.addEventListener('input', () => {
+            validateField(cityManualInput, cityManualInput.value.trim().length > 1, 'city-manual-error');
         });
     }
 
@@ -267,7 +305,14 @@ function initFormValidation() {
         const isNameValid = validateField(nameInput, nameInput.value.trim().length > 1, 'name-error');
         const isMobileValid = validateField(mobileInput, /^[6-9]\d{9}$/.test(mobileInput.value), 'mobile-error');
         const isQtyValid = validateField(quantitySelect, quantitySelect.value !== '', 'quantity-error');
-        const isCityValid = cityInput ? validateField(cityInput, cityInput.value.trim().length > 1, 'city-error') : true;
+        let isCityValid = true;
+        if (cityInput) {
+            if (cityInput.value === 'Other') {
+                isCityValid = validateField(cityManualInput, cityManualInput.value.trim().length > 1, 'city-manual-error');
+            } else {
+                isCityValid = validateField(cityInput, cityInput.value !== '', 'city-error');
+            }
+        }
         const isStateValid = true; // State is optional
 
         if (!isNameValid || !isMobileValid || !isQtyValid || !isCityValid || !isStateValid) {
@@ -280,7 +325,10 @@ function initFormValidation() {
         const name = nameInput.value.trim();
         const mobile = mobileInput.value.trim();
         const quantity = quantitySelect.value;
-        const city = cityInput ? cityInput.value.trim() : '';
+        let city = cityInput ? cityInput.value.trim() : '';
+        if (city === 'Other' && cityManualInput) {
+            city = cityManualInput.value.trim();
+        }
         const state = stateInput ? stateInput.value.trim() : '';
 
         // Duplicate prevention using local storage

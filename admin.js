@@ -1058,8 +1058,12 @@ if (manualBookingForm) {
         const fullName = manualNameInput.value.trim();
         const mobileNumber = manualMobileInput.value.trim();
         const quantity = manualQuantitySelect.value;
-        const cityVal = document.getElementById('manual-city') ? document.getElementById('manual-city').value.trim() : '';
         const stateVal = document.getElementById('manual-state') ? document.getElementById('manual-state').value.trim() : '';
+        let cityVal = document.getElementById('manual-city') ? document.getElementById('manual-city').value.trim() : '';
+        if (cityVal === 'Other') {
+            const manualCityManual = document.getElementById('manual-city-manual');
+            cityVal = manualCityManual ? manualCityManual.value.trim() : '';
+        }
         
         // 1. Validate Name
         if (!fullName) {
@@ -1238,6 +1242,13 @@ window.openEditBookingModal = function(id) {
     
     // Clear and populate city select dropdown
     editCityInput.innerHTML = '';
+    const editCityManualInput = document.getElementById('edit-city-manual');
+    const editCityManualGroup = document.getElementById('edit-city-manual-group');
+    
+    // Reset manual group
+    if (editCityManualGroup) editCityManualGroup.classList.add('hidden');
+    if (editCityManualInput) editCityManualInput.value = '';
+
     if (stateVal && indianStatesAndCities[stateVal]) {
         // Add placeholder option
         const defaultOpt = document.createElement('option');
@@ -1252,8 +1263,26 @@ window.openEditBookingModal = function(id) {
             option.textContent = city;
             editCityInput.appendChild(option);
         });
+
+        // Add Other option
+        const otherOpt = document.createElement('option');
+        otherOpt.value = 'Other';
+        otherOpt.textContent = 'Other (Type manually)';
+        editCityInput.appendChild(otherOpt);
         
-        editCityInput.value = booking.city || '';
+        const bookingCity = booking.city || '';
+        if (bookingCity) {
+            const isKnownCity = indianStatesAndCities[stateVal].includes(bookingCity);
+            if (isKnownCity) {
+                editCityInput.value = bookingCity;
+            } else {
+                editCityInput.value = 'Other';
+                if (editCityManualGroup) editCityManualGroup.classList.remove('hidden');
+                if (editCityManualInput) editCityManualInput.value = bookingCity;
+            }
+        } else {
+            editCityInput.value = '';
+        }
     } else {
         const defaultOpt = document.createElement('option');
         defaultOpt.value = '';
@@ -1261,6 +1290,19 @@ window.openEditBookingModal = function(id) {
         defaultOpt.selected = true;
         defaultOpt.textContent = 'Select State first';
         editCityInput.appendChild(defaultOpt);
+        
+        // If state is empty but city is specified, treat it as Other
+        const bookingCity = booking.city || '';
+        if (bookingCity) {
+            const otherOpt = document.createElement('option');
+            otherOpt.value = 'Other';
+            otherOpt.selected = true;
+            otherOpt.textContent = 'Other (Type manually)';
+            editCityInput.appendChild(otherOpt);
+            
+            if (editCityManualGroup) editCityManualGroup.classList.remove('hidden');
+            if (editCityManualInput) editCityManualInput.value = bookingCity;
+        }
     }
     editQuantitySelect.value = booking.quantity || '';
 
@@ -1295,7 +1337,11 @@ if (editBookingForm) {
         const id = parseInt(editBookingIdInput.value, 10);
         const fullName = editNameInput.value.trim();
         const mobileNumber = editMobileInput.value.trim();
-        const city = editCityInput.value.trim();
+        let city = editCityInput.value.trim();
+        if (city === 'Other') {
+            const editCityManualInput = document.getElementById('edit-city-manual');
+            city = editCityManualInput ? editCityManualInput.value.trim() : '';
+        }
         const state = editStateInput.value.trim();
         const quantity = editQuantitySelect.value;
 
@@ -1387,12 +1433,16 @@ if (editBookingForm) {
 // Bind autocomplete for Manual Booking Modal
 bindStateCityAutocomplete(
     document.getElementById('manual-state'),
-    document.getElementById('manual-city')
+    document.getElementById('manual-city'),
+    document.getElementById('manual-city-manual-group'),
+    document.getElementById('manual-city-manual')
 );
 
 // Bind autocomplete for Edit Booking Modal
 bindStateCityAutocomplete(
     document.getElementById('edit-state'),
-    document.getElementById('edit-city')
+    document.getElementById('edit-city'),
+    document.getElementById('edit-city-manual-group'),
+    document.getElementById('edit-city-manual')
 );
 
