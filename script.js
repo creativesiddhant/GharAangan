@@ -458,38 +458,77 @@ function initRecentBookingsNotifications() {
             fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
             const dateStr = fiveDaysAgo.toISOString();
 
-            console.log('[RecentBookings] Fetching recent pre-bookings from database (last 5 days)...');
+            console.log('[RecentBookings] Fetching recent pre-bookings from secure public view (last 5 days)...');
             let { data, error } = await supabaseClient
-                .from('prebookings')
-                .select('full_name, quantity, created_at')
+                .from('safe_recent_bookings')
+                .select('first_name, quantity, created_at')
                 .gte('created_at', dateStr)
                 .order('created_at', { ascending: false });
 
-            if (error) throw error;
+            // If the view does not exist yet (developer hasn't run the SQL), fallback to querying prebookings table directly
+            if (error && (error.code === 'PGRST116' || (error.message && error.message.includes('safe_recent_bookings')))) {
+                console.warn('[RecentBookings] Secure view not found. Attempting direct table query as fallback (requires RLS select policy)...');
+                const directRes = await supabaseClient
+                    .from('prebookings')
+                    .select('full_name, quantity, created_at')
+                    .gte('created_at', dateStr)
+                    .order('created_at', { ascending: false });
+                
+                if (directRes.data) {
+                    data = directRes.data.map(b => ({
+                        first_name: (b.full_name || '').split(' ')[0],
+                        quantity: b.quantity,
+                        created_at: b.created_at
+                    }));
+                } else {
+                    error = directRes.error;
+                }
+            } else if (error) {
+                throw error;
+            }
 
             // Fallback: If no prebookings have been made in the last 5 days, load the last 20 overall to keep notifications active
             if (!data || data.length === 0) {
                 console.log('[RecentBookings] No bookings found in the last 5 days. Fetching last 20 overall pre-bookings...');
-                const res = await supabaseClient
-                    .from('prebookings')
-                    .select('full_name, quantity, created_at')
+                
+                // Try querying the secure view first
+                let res = await supabaseClient
+                    .from('safe_recent_bookings')
+                    .select('first_name, quantity, created_at')
                     .order('created_at', { ascending: false })
                     .limit(20);
                 
-                if (res.error) throw res.error;
-                data = res.data;
+                // Fallback to table if view fails
+                if (res.error) {
+                    res = await supabaseClient
+                        .from('prebookings')
+                        .select('full_name, quantity, created_at')
+                        .order('created_at', { ascending: false })
+                        .limit(20);
+                    
+                    if (res.data) {
+                        data = res.data.map(b => ({
+                            first_name: (b.full_name || '').split(' ')[0],
+                            quantity: b.quantity,
+                            created_at: b.created_at
+                        }));
+                    } else {
+                        throw res.error;
+                    }
+                } else {
+                    data = res.data;
+                }
             }
 
             if (data && data.length > 0) {
                 bookingsPool = data.map(b => {
-                    const fullName = b.full_name || "Someone";
-                    const firstName = fullName.split(' ')[0];
+                    const firstName = b.first_name || "Someone";
                     const qty = cleanQuantity(b.quantity);
                     return { name: firstName, quantity: qty };
                 });
                 console.log(`[RecentBookings] Successfully loaded ${bookingsPool.length} bookings to rotate:`, bookingsPool);
             } else {
-                console.log('[RecentBookings] Database table is empty. No historic bookings found.');
+                console.log('[RecentBookings] Database table/view is empty. No historic bookings found.');
             }
         } catch (err) {
             console.error('[RecentBookings] Database SELECT query failed. Check your Supabase RLS Policies. Details:', err);
