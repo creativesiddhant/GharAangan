@@ -538,7 +538,7 @@ function initRecentBookingsNotifications() {
     let currentToast = null;
     let toastTimeout = null;
     let lastToastClosedAt = 0;
-    const minToastGap = 3000; // 3 seconds gap between any two notifications
+    const minToastGap = 5000; // 5 seconds gap between any two notifications
 
     // Build and slide in a notification toast
     function showNotification(booking, isNew = false) {
@@ -661,7 +661,7 @@ function initRecentBookingsNotifications() {
         let historicCount = 0;
         const targetHistoricCount = 4; // Show 4 historic notifications initially to create hype
         
-        // Helper to queue the next automatic notification with a 3s gap
+        // Helper to queue the next automatic notification with a 5s gap
         function scheduleNextAuto() {
             if (historicCount >= targetHistoricCount || bookingsPool.length === 0) {
                 console.log('[RecentBookings] Initial sequence finished. Auto-play stopped.');
@@ -670,7 +670,7 @@ function initRecentBookingsNotifications() {
             setTimeout(() => {
                 showNextNotification();
                 historicCount++;
-            }, 3000); // 3 seconds gap of silence after previous fully closes
+            }, 5000); // 5 seconds gap of silence after previous fully closes
         }
 
         // Listener to chain the next automatic display from the close event
