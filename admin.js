@@ -20,7 +20,7 @@ const indianStatesAndCities = {
     "Chandigarh": ["Chandigarh"],
     "Chhattisgarh": ["Raipur", "Bhilai", "Bilaspur", "Korba", "Rajnandgaon", "Jagdalpur", "Ambikapur", "Dhamtari"],
     "Dadra and Nagar Haveli and Daman and Diu": ["Silvassa", "Daman", "Diu"],
-    "Delhi": ["New Delhi", "Delhi Cantt.", "Dwarka", "Rohini", "Vasant Kunj", "Saket", "Janakpuri", "Karol Bagh", "Shahdara"],
+    "Delhi": ["New Delhi", "Old Delhi", "Delhi Cantt.", "Dwarka", "Rohini", "Vasant Kunj", "Saket", "Janakpuri", "Karol Bagh", "Shahdara"],
     "Goa": ["Panaji", "Margao", "Vasco da Gama", "Mapusa", "Ponda"],
     "Gujarat": ["Ahmedabad", "Surat", "Vadodara", "Rajkot", "Bhavnagar", "Jamnagar", "Gandhinagar", "Junagadh", "Gandhidham", "Anand", "Morbi"],
     "Haryana": ["Faridabad", "Gurugram", "Panipat", "Ambala", "Yamunanagar", "Rohtak", "Hisar", "Karnal", "Sonipat", "Panchkula"],
