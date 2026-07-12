@@ -3316,6 +3316,11 @@ function updateVisitsView(totalCount) {
         kpiTotalVisitors.textContent = totalCount !== undefined ? totalCount : visitsData.length;
     }
     renderVisitsTable();
+    try {
+        renderCharts();
+    } catch (e) {
+        console.error('Error rendering charts after visits update:', e);
+    }
 }
 
 function renderVisitsTable() {
