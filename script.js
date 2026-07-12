@@ -132,6 +132,8 @@ function initFormValidation() {
     const nameInput = document.getElementById('full-name');
     const mobileInput = document.getElementById('mobile-number');
     const quantitySelect = document.getElementById('ghee-quantity');
+    const cityInput = document.getElementById('city');
+    const stateInput = document.getElementById('state');
     const submitBtn = document.getElementById('submit-btn');
     const btnText = submitBtn.querySelector('.btn-text');
     const btnSpinner = submitBtn.querySelector('.btn-spinner');
@@ -160,6 +162,18 @@ function initFormValidation() {
         validateField(quantitySelect, quantitySelect.value !== '', 'quantity-error');
     });
 
+    if (cityInput) {
+        cityInput.addEventListener('input', () => {
+            validateField(cityInput, cityInput.value.trim().length > 1, 'city-error');
+        });
+    }
+
+    if (stateInput) {
+        stateInput.addEventListener('input', () => {
+            validateField(stateInput, stateInput.value.trim().length > 1, 'state-error');
+        });
+    }
+
     function validateField(inputElement, condition, errorId) {
         const group = inputElement.closest('.input-group');
         const errorSpan = document.getElementById(errorId);
@@ -180,8 +194,10 @@ function initFormValidation() {
         const isNameValid = validateField(nameInput, nameInput.value.trim().length > 1, 'name-error');
         const isMobileValid = validateField(mobileInput, /^[6-9]\d{9}$/.test(mobileInput.value), 'mobile-error');
         const isQtyValid = validateField(quantitySelect, quantitySelect.value !== '', 'quantity-error');
+        const isCityValid = cityInput ? validateField(cityInput, cityInput.value.trim().length > 1, 'city-error') : true;
+        const isStateValid = stateInput ? validateField(stateInput, stateInput.value.trim().length > 1, 'state-error') : true;
 
-        if (!isNameValid || !isMobileValid || !isQtyValid) {
+        if (!isNameValid || !isMobileValid || !isQtyValid || !isCityValid || !isStateValid) {
             // Find first error group and focus it
             const firstError = form.querySelector('.input-group.error input, .input-group.error select');
             if (firstError) firstError.focus();
@@ -191,6 +207,8 @@ function initFormValidation() {
         const name = nameInput.value.trim();
         const mobile = mobileInput.value.trim();
         const quantity = quantitySelect.value;
+        const city = cityInput ? cityInput.value.trim() : '';
+        const state = stateInput ? stateInput.value.trim() : '';
 
         // Duplicate prevention using local storage
         let bookings = JSON.parse(localStorage.getItem('gharaangan_prebookings') || '[]');
@@ -213,7 +231,7 @@ function initFormValidation() {
         // Helper function to complete pre-booking in UI
         function completePrebooking() {
             // Save booking locally
-            bookings.push({ name, mobile, quantity, date: new Date().toISOString() });
+            bookings.push({ name, mobile, quantity, city, state, date: new Date().toISOString() });
             localStorage.setItem('gharaangan_prebookings', JSON.stringify(bookings));
 
             // Trigger recent booking notification event
@@ -246,7 +264,7 @@ function initFormValidation() {
             supabaseClient
                 .from('prebookings')
                 .insert([
-                    { full_name: name, mobile_number: mobile, quantity: quantity }
+                    { full_name: name, mobile_number: mobile, quantity: quantity, city: city, state: state }
                 ])
                 .then(({ error }) => {
                     if (error) {

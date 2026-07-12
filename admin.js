@@ -256,7 +256,7 @@ async function fetchBookings() {
 
         if (error) {
             console.error('Error fetching bookings:', error.message);
-            bookingsTableBody.innerHTML = `<tr><td colspan="5" class="table-no-data-row">Error fetching data. Check RLS Policies.</td></tr>`;
+            bookingsTableBody.innerHTML = `<tr><td colspan="6" class="table-no-data-row">Error fetching data. Check RLS Policies.</td></tr>`;
             return;
         }
 
@@ -264,7 +264,7 @@ async function fetchBookings() {
         updateDashboardView();
     } catch (err) {
         console.error('Fetch exception:', err);
-        bookingsTableBody.innerHTML = `<tr><td colspan="5" class="table-no-data-row">An unexpected error occurred.</td></tr>`;
+        bookingsTableBody.innerHTML = `<tr><td colspan="6" class="table-no-data-row">An unexpected error occurred.</td></tr>`;
     }
 }
 
@@ -589,11 +589,13 @@ function renderBookingsTable() {
     const filteredData = bookingsData.filter(booking => {
         const name = (booking.full_name || '').toLowerCase();
         const mobile = (booking.mobile_number || '').toLowerCase();
-        return name.includes(filter) || mobile.includes(filter);
+        const city = (booking.city || '').toLowerCase();
+        const state = (booking.state || '').toLowerCase();
+        return name.includes(filter) || mobile.includes(filter) || city.includes(filter) || state.includes(filter);
     });
 
     if (filteredData.length === 0) {
-        bookingsTableBody.innerHTML = `<tr><td colspan="5" class="table-no-data-row">No bookings match search criteria.</td></tr>`;
+        bookingsTableBody.innerHTML = `<tr><td colspan="6" class="table-no-data-row">No bookings match search criteria.</td></tr>`;
         return;
     }
 
@@ -611,17 +613,26 @@ function renderBookingsTable() {
             minute: '2-digit'
         });
 
+        // Location formatting
+        const city = booking.city ? escapeHtml(booking.city) : '';
+        const state = booking.state ? escapeHtml(booking.state) : '';
+        const locationStr = (city && state) ? `${city}, ${state}` : (city || state || '—');
+
         // Cells
         row.innerHTML = `
             <td class="date-cell">${formattedDate}</td>
             <td style="font-weight: 600;">${escapeHtml(booking.full_name)}</td>
             <td>+91 ${escapeHtml(booking.mobile_number)}</td>
+            <td>${locationStr}</td>
             <td><span class="qty-badge">${escapeHtml(booking.quantity)}</span></td>
             <td>
                 <div style="display: flex; gap: 8px;">
                     <a href="tel:+91${booking.mobile_number}" class="btn-dial" title="Call Customer">
                         <i class="fa-solid fa-phone"></i>
-                    </a>
+                     </a>
+                    <button class="btn-edit" onclick="openEditBookingModal(${booking.id})" title="Edit Pre-booking" style="background-color: var(--accent-light); color: var(--gold); border: 1px solid rgba(212,175,55,0.3); border-radius: var(--border-radius-sm); padding: 8px; width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: var(--transition-smooth);">
+                        <i class="fa-regular fa-pen-to-square"></i>
+                    </button>
                     <button class="btn-delete" onclick="deleteBooking(${booking.id})" title="Delete Pre-booking">
                         <i class="fa-regular fa-trash-can"></i>
                     </button>
@@ -726,15 +737,17 @@ exportCsvBtn.addEventListener('click', () => {
     }
 
     let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += "Date & Time,Full Name,Mobile Number,Quantity Selected\n";
+    csvContent += "Date & Time,Full Name,Mobile Number,City,State,Quantity Selected\n";
 
     bookingsData.forEach(booking => {
         const date = new Date(booking.created_at).toISOString().replace(/T/, ' ').replace(/\..+/, '');
-        const name = `"${booking.full_name.replace(/"/g, '""')}"`;
-        const mobile = `"${booking.mobile_number}"`;
-        const qty = `"${booking.quantity}"`;
+        const name = `"${(booking.full_name || '').replace(/"/g, '""')}"`;
+        const mobile = `"${booking.mobile_number || ''}"`;
+        const city = `"${(booking.city || '').replace(/"/g, '""')}"`;
+        const state = `"${(booking.state || '').replace(/"/g, '""')}"`;
+        const qty = `"${booking.quantity || ''}"`;
         
-        csvContent += `${date},${name},${mobile},${qty}\n`;
+        csvContent += `${date},${name},${mobile},${city},${state},${qty}\n`;
     });
 
     const encodedUri = encodeURI(csvContent);
@@ -947,6 +960,8 @@ if (manualBookingForm) {
         const fullName = manualNameInput.value.trim();
         const mobileNumber = manualMobileInput.value.trim();
         const quantity = manualQuantitySelect.value;
+        const cityVal = document.getElementById('manual-city') ? document.getElementById('manual-city').value.trim() : '';
+        const stateVal = document.getElementById('manual-state') ? document.getElementById('manual-state').value.trim() : '';
         
         // 1. Validate Name
         if (!fullName) {
@@ -997,7 +1012,7 @@ if (manualBookingForm) {
             const { data, error } = await supabaseClient
                 .from('prebookings')
                 .insert([
-                    { full_name: fullName, mobile_number: mobileNumber, quantity: quantity }
+                    { full_name: fullName, mobile_number: mobileNumber, quantity: quantity, city: cityVal, state: stateVal }
                 ])
                 .select();
                 
@@ -1020,9 +1035,7 @@ if (manualBookingForm) {
                 closeManualBookingModal();
                 
                 // If real-time did not update (e.g. not connected), we manually reload
-                // Realtime will normally add the inserted item to `bookingsData`. But doing a manual fetch ensures consistency.
                 if (data && data.length > 0) {
-                    // Check if it's already added by realtime. If not, add it or fetch all.
                     const alreadyExists = bookingsData.some(b => b.id === data[0].id);
                     if (!alreadyExists) {
                         bookingsData.unshift(data[0]);
@@ -1074,6 +1087,156 @@ if (manualQuantitySelect) {
     manualQuantitySelect.addEventListener('change', () => {
         if (manualQuantitySelect.value) {
             if (manualQuantityGroup) manualQuantityGroup.classList.remove('invalid');
+        }
+    });
+}
+
+/* ==========================================================================
+   14. Edit Pre-booking Functionality
+   ========================================================================== */
+const editBookingModal = document.getElementById('edit-booking-modal');
+const closeEditModalXBtn = document.getElementById('close-edit-modal-x-btn');
+const closeEditModalBtn = document.getElementById('close-edit-booking-modal');
+const editBookingForm = document.getElementById('edit-booking-form');
+
+const editBookingIdInput = document.getElementById('edit-booking-id');
+const editNameInput = document.getElementById('edit-full-name');
+const editMobileInput = document.getElementById('edit-mobile-number');
+const editCityInput = document.getElementById('edit-city');
+const editStateInput = document.getElementById('edit-state');
+const editQuantitySelect = document.getElementById('edit-quantity');
+
+const editNameGroup = document.getElementById('edit-name-group');
+const editMobileGroup = document.getElementById('edit-mobile-group');
+const editQuantityGroup = document.getElementById('edit-quantity-group');
+
+const submitEditBookingBtn = document.getElementById('submit-edit-booking-btn');
+const editSubmitBtnText = submitEditBookingBtn ? submitEditBookingBtn.querySelector('.btn-text') : null;
+const editSubmitBtnSpinner = submitEditBookingBtn ? submitEditBookingBtn.querySelector('.btn-spinner') : null;
+
+window.openEditBookingModal = function(id) {
+    const booking = bookingsData.find(b => b.id === id);
+    if (!booking) return;
+
+    // Reset errors
+    if (editNameGroup) editNameGroup.classList.remove('invalid');
+    if (editMobileGroup) editMobileGroup.classList.remove('invalid');
+    if (editQuantityGroup) editQuantityGroup.classList.remove('invalid');
+
+    // Populate fields
+    editBookingIdInput.value = booking.id;
+    editNameInput.value = booking.full_name || '';
+    editMobileInput.value = booking.mobile_number || '';
+    editCityInput.value = booking.city || '';
+    editStateInput.value = booking.state || '';
+    editQuantitySelect.value = booking.quantity || '';
+
+    // Show modal
+    if (editBookingModal) {
+        editBookingModal.classList.add('active');
+    }
+};
+
+function closeEditBookingModal() {
+    if (editBookingModal) {
+        editBookingModal.classList.remove('active');
+    }
+}
+
+if (closeEditModalXBtn) closeEditModalXBtn.addEventListener('click', closeEditBookingModal);
+if (closeEditModalBtn) closeEditModalBtn.addEventListener('click', closeEditBookingModal);
+
+if (editBookingModal) {
+    editBookingModal.addEventListener('click', (e) => {
+        if (e.target === editBookingModal) {
+            closeEditBookingModal();
+        }
+    });
+}
+
+if (editBookingForm) {
+    editBookingForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        let isValid = true;
+        const id = parseInt(editBookingIdInput.value, 10);
+        const fullName = editNameInput.value.trim();
+        const mobileNumber = editMobileInput.value.trim();
+        const city = editCityInput.value.trim();
+        const state = editStateInput.value.trim();
+        const quantity = editQuantitySelect.value;
+
+        // Validate fields
+        if (!fullName) {
+            if (editNameGroup) editNameGroup.classList.add('invalid');
+            isValid = false;
+        } else {
+            if (editNameGroup) editNameGroup.classList.remove('invalid');
+        }
+
+        const mobilePattern = /^[6-9]\d{9}$/;
+        if (!mobileNumber || !mobilePattern.test(mobileNumber)) {
+            if (editMobileGroup) editMobileGroup.classList.add('invalid');
+            isValid = false;
+        } else {
+            if (editMobileGroup) editMobileGroup.classList.remove('invalid');
+        }
+
+        if (!quantity) {
+            if (editQuantityGroup) editQuantityGroup.classList.add('invalid');
+            isValid = false;
+        } else {
+            if (editQuantityGroup) editQuantityGroup.classList.remove('invalid');
+        }
+
+        if (!isValid) return;
+
+        // Loading state
+        if (submitEditBookingBtn) submitEditBookingBtn.disabled = true;
+        if (editSubmitBtnText) editSubmitBtnText.classList.add('hidden');
+        if (editSubmitBtnSpinner) editSubmitBtnSpinner.classList.remove('hidden');
+
+        try {
+            if (!supabaseClient) {
+                alert('Supabase client is not initialized.');
+                closeEditBookingModal();
+                return;
+            }
+
+            const { data, error } = await supabaseClient
+                .from('prebookings')
+                .update({
+                    full_name: fullName,
+                    mobile_number: mobileNumber,
+                    city: city,
+                    state: state,
+                    quantity: quantity
+                })
+                .eq('id', id)
+                .select();
+
+            if (error) {
+                console.error('Error updating booking:', error.message);
+                alert('Failed to update booking: ' + error.message);
+            } else {
+                // Update locally
+                const updatedRow = data && data[0];
+                if (updatedRow) {
+                    const idx = bookingsData.findIndex(b => b.id === id);
+                    if (idx !== -1) {
+                        bookingsData[idx] = updatedRow;
+                        updateDashboardView();
+                    }
+                }
+                closeEditBookingModal();
+            }
+        } catch (err) {
+            console.error('Update exception:', err);
+            alert('An unexpected error occurred while saving changes.');
+        } finally {
+            if (submitEditBookingBtn) submitEditBookingBtn.disabled = false;
+            if (editSubmitBtnText) editSubmitBtnText.classList.remove('hidden');
+            if (editSubmitBtnSpinner) editSubmitBtnSpinner.classList.add('hidden');
         }
     });
 }

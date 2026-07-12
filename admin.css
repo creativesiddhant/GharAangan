@@ -981,3 +981,21 @@ tr:hover td {
         width: 100%;
     }
 }
+
+/* Form Row helper for modals and forms */
+.form-row {
+    display: flex;
+    gap: 16px;
+    width: 100%;
+}
+
+.form-row .input-group {
+    flex: 1;
+}
+
+@media (max-width: 480px) {
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+}

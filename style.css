@@ -1686,3 +1686,21 @@ p {
     }
 }
 
+/* Form Row for side-by-side elements on desktop, stacked on mobile */
+.form-row {
+    display: flex;
+    gap: 16px;
+    width: 100%;
+}
+
+.form-row .input-group {
+    flex: 1;
+}
+
+@media (max-width: 580px) {
+    .form-row {
+        flex-direction: column;
+        gap: 20px;
+    }
+}
+

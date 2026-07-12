@@ -192,13 +192,14 @@
                                     <th>Date & Time</th>
                                     <th>Full Name</th>
                                     <th>Mobile Number</th>
+                                    <th>Location</th>
                                     <th>Quantity Selected</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="bookings-table-body">
                                 <tr>
-                                    <td colspan="5" class="table-loading-row">
+                                    <td colspan="6" class="table-loading-row">
                                         <i class="fa-solid fa-spinner fa-spin"></i> Loading pre-bookings list...
                                     </td>
                                 </tr>
@@ -269,6 +270,17 @@
                     <input type="tel" id="manual-mobile-number" placeholder="10-digit mobile number" required maxlength="10">
                     <span class="error-msg" id="manual-mobile-error">Please enter a valid 10-digit mobile number starting with 6-9</span>
                 </div>
+
+                <div class="form-row">
+                    <div class="input-group" id="manual-city-group">
+                        <label for="manual-city"><i class="fa-solid fa-city"></i> City</label>
+                        <input type="text" id="manual-city" placeholder="e.g. Noida">
+                    </div>
+                    <div class="input-group" id="manual-state-group">
+                        <label for="manual-state"><i class="fa-solid fa-map-location-dot"></i> State</label>
+                        <input type="text" id="manual-state" placeholder="e.g. Uttar Pradesh">
+                    </div>
+                </div>
                 
                 <div class="input-group" id="manual-quantity-group">
                     <label for="manual-quantity"><i class="fa-solid fa-bucket"></i> Ghee Quantity</label>
@@ -288,6 +300,65 @@
                     <button type="button" id="close-add-booking-modal" class="btn btn-secondary btn-sm" style="border-radius: var(--border-radius-md);">Cancel</button>
                     <button type="submit" id="submit-manual-booking-btn" class="btn btn-primary btn-sm" style="border-radius: var(--border-radius-md);">
                         <span class="btn-text">Add Booking</span>
+                        <span class="btn-spinner hidden"><i class="fa-solid fa-spinner fa-spin"></i> Saving...</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Booking Modal -->
+    <div id="edit-booking-modal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-card-header">
+                <h3>Edit Pre-booking</h3>
+                <button type="button" class="modal-close-x" id="close-edit-modal-x-btn" aria-label="Close dialog">&times;</button>
+            </div>
+            
+            <form id="edit-booking-form" novalidate>
+                <input type="hidden" id="edit-booking-id">
+                
+                <div class="input-group" id="edit-name-group">
+                    <label for="edit-full-name"><i class="fa-regular fa-user"></i> Full Name</label>
+                    <input type="text" id="edit-full-name" placeholder="e.g. Ramesh Kumar" required>
+                    <span class="error-msg" id="edit-name-error">Please enter the customer's full name</span>
+                </div>
+                
+                <div class="input-group" id="edit-mobile-group">
+                    <label for="edit-mobile-number"><i class="fa-solid fa-phone"></i> Mobile Number</label>
+                    <input type="tel" id="edit-mobile-number" placeholder="10-digit mobile number" required maxlength="10">
+                    <span class="error-msg" id="edit-mobile-error">Please enter a valid 10-digit mobile number starting with 6-9</span>
+                </div>
+
+                <div class="form-row">
+                    <div class="input-group" id="edit-city-group">
+                        <label for="edit-city"><i class="fa-solid fa-city"></i> City</label>
+                        <input type="text" id="edit-city" placeholder="e.g. Noida">
+                    </div>
+                    <div class="input-group" id="edit-state-group">
+                        <label for="edit-state"><i class="fa-solid fa-map-location-dot"></i> State</label>
+                        <input type="text" id="edit-state" placeholder="e.g. Uttar Pradesh">
+                    </div>
+                </div>
+                
+                <div class="input-group" id="edit-quantity-group">
+                    <label for="edit-quantity"><i class="fa-solid fa-bucket"></i> Ghee Quantity</label>
+                    <div class="custom-select-wrapper">
+                        <select id="edit-quantity" required>
+                            <option value="" disabled selected>Select quantity</option>
+                            <option value="500ml">500ml Glass Jar</option>
+                            <option value="1 Litre">1 Litre Premium Tin</option>
+                            <option value="2 Litres">2 Litres (2 x 1L Tins)</option>
+                            <option value="5 Litres">5 Litres (Family Pack)</option>
+                        </select>
+                    </div>
+                    <span class="error-msg" id="edit-quantity-error">Please select a quantity</span>
+                </div>
+                
+                <div class="modal-actions" style="margin-top: 30px; display: flex; gap: 12px; justify-content: flex-end;">
+                    <button type="button" id="close-edit-booking-modal" class="btn btn-secondary btn-sm" style="border-radius: var(--border-radius-md);">Cancel</button>
+                    <button type="submit" id="submit-edit-booking-btn" class="btn btn-primary btn-sm" style="border-radius: var(--border-radius-md);">
+                        <span class="btn-text">Save Changes</span>
                         <span class="btn-spinner hidden"><i class="fa-solid fa-spinner fa-spin"></i> Saving...</span>
                     </button>
                 </div>
