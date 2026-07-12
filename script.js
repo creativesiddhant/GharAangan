@@ -568,7 +568,7 @@ function initRecentBookingsNotifications() {
     let bookingsPool = [];
     let newBookingsQueue = [];
     let displayedCount = 0;
-    const maxSessionNotifications = 8; // Session cap for auto-played notifications to remain premium and non-intrusive
+    const maxSessionNotifications = 12; // Session cap for auto-played notifications to remain premium and non-intrusive
     
     // Create notification container
     const container = document.createElement('div');
@@ -771,7 +771,7 @@ function initRecentBookingsNotifications() {
         }
         
         let historicCount = 0;
-        const targetHistoricCount = 4; // Show 4 historic notifications initially to create hype
+        const targetHistoricCount = 10; // Show 10 historic notifications initially to create hype
         
         // Helper to queue the next automatic notification with a 5s gap
         function scheduleNextAuto() {
