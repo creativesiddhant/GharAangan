@@ -357,7 +357,7 @@ function initFormValidation() {
 
             // Trigger recent booking notification event
             window.dispatchEvent(new CustomEvent('new-prebooking', { 
-                detail: { full_name: name, quantity: quantity } 
+                detail: { full_name: name, quantity: quantity, city: city } 
             }));
 
             // Populate success modal
@@ -575,6 +575,15 @@ function initRecentBookingsNotifications() {
     container.className = 'booking-toast-container';
     document.body.appendChild(container);
 
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/&/g, "&amp;")
+                  .replace(/</g, "&lt;")
+                  .replace(/>/g, "&gt;")
+                  .replace(/"/g, "&quot;")
+                  .replace(/'/g, "&#039;");
+    }
+
     // Standardize quantity strings to clean short-form (e.g. "2 Litres" instead of "2 Litres (2 x 1L Tins)")
     function cleanQuantity(qty) {
         if (!qty) return "1 Litre";
@@ -592,70 +601,31 @@ function initRecentBookingsNotifications() {
             return;
         }
         try {
-            // Get prebookings from the last 5 days
-            const fiveDaysAgo = new Date();
-            fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
-            const dateStr = fiveDaysAgo.toISOString();
-
-            console.log('[RecentBookings] Fetching recent pre-bookings from secure public view (last 5 days)...');
+            console.log('[RecentBookings] Fetching last 12 pre-bookings...');
             let { data, error } = await supabaseClient
                 .from('safe_recent_bookings')
-                .select('first_name, quantity, created_at')
-                .gte('created_at', dateStr)
-                .order('created_at', { ascending: false });
+                .select('first_name, quantity, created_at, city')
+                .order('created_at', { ascending: false })
+                .limit(12);
 
-            // If the view does not exist yet (developer hasn't run the SQL), fallback to querying prebookings table directly
-            if (error && (error.code === 'PGRST116' || (error.message && error.message.includes('safe_recent_bookings')))) {
-                console.warn('[RecentBookings] Secure view not found. Attempting direct table query as fallback (requires RLS select policy)...');
+            // If the view does not exist or fails (e.g. lacks city column), fallback to querying prebookings table directly
+            if (error) {
+                console.warn('[RecentBookings] Secure view query failed, falling back to direct table query...', error);
                 const directRes = await supabaseClient
                     .from('prebookings')
-                    .select('full_name, quantity, created_at')
-                    .gte('created_at', dateStr)
-                    .order('created_at', { ascending: false });
+                    .select('full_name, quantity, created_at, city')
+                    .order('created_at', { ascending: false })
+                    .limit(12);
                 
                 if (directRes.data) {
                     data = directRes.data.map(b => ({
                         first_name: (b.full_name || '').split(' ')[0],
                         quantity: b.quantity,
-                        created_at: b.created_at
+                        created_at: b.created_at,
+                        city: b.city
                     }));
                 } else {
-                    error = directRes.error;
-                }
-            } else if (error) {
-                throw error;
-            }
-
-            // Fallback: If no prebookings have been made in the last 5 days, load the last 20 overall to keep notifications active
-            if (!data || data.length === 0) {
-                console.log('[RecentBookings] No bookings found in the last 5 days. Fetching last 20 overall pre-bookings...');
-                
-                // Try querying the secure view first
-                let res = await supabaseClient
-                    .from('safe_recent_bookings')
-                    .select('first_name, quantity, created_at')
-                    .order('created_at', { ascending: false })
-                    .limit(20);
-                
-                // Fallback to table if view fails
-                if (res.error) {
-                    res = await supabaseClient
-                        .from('prebookings')
-                        .select('full_name, quantity, created_at')
-                        .order('created_at', { ascending: false })
-                        .limit(20);
-                    
-                    if (res.data) {
-                        data = res.data.map(b => ({
-                            first_name: (b.full_name || '').split(' ')[0],
-                            quantity: b.quantity,
-                            created_at: b.created_at
-                        }));
-                    } else {
-                        throw res.error;
-                    }
-                } else {
-                    data = res.data;
+                    throw directRes.error;
                 }
             }
 
@@ -663,14 +633,15 @@ function initRecentBookingsNotifications() {
                 bookingsPool = data.map(b => {
                     const firstName = b.first_name || "Someone";
                     const qty = cleanQuantity(b.quantity);
-                    return { name: firstName, quantity: qty };
+                    const cityVal = b.city ? b.city.trim() : '';
+                    return { name: firstName, quantity: qty, city: cityVal };
                 });
                 console.log(`[RecentBookings] Successfully loaded ${bookingsPool.length} bookings to rotate:`, bookingsPool);
             } else {
                 console.log('[RecentBookings] Database table/view is empty. No historic bookings found.');
             }
         } catch (err) {
-            console.error('[RecentBookings] Database SELECT query failed. Check your Supabase RLS Policies. Details:', err);
+            console.error('[RecentBookings] Database SELECT query failed. Details:', err);
         }
     }
 
@@ -692,12 +663,14 @@ function initRecentBookingsNotifications() {
         const toast = document.createElement('div');
         toast.className = 'booking-toast';
         
+        const locationPhrase = booking.city ? ` from <strong>${escapeHtml(booking.city)}</strong>` : '';
+        
         toast.innerHTML = `
             <div class="booking-toast-icon">
                 <i class="fa-solid fa-check"></i>
             </div>
             <div class="booking-toast-content">
-                <strong>${booking.name}</strong> recently pre-booked <strong>${booking.quantity}</strong> of our ghee.
+                <strong>${escapeHtml(booking.name)}</strong>${locationPhrase} recently pre-booked <strong>${booking.quantity}</strong> of our ghee.
             </div>
             <button class="booking-toast-close" title="Close Notification">
                 <i class="fa-solid fa-xmark"></i>
@@ -771,7 +744,7 @@ function initRecentBookingsNotifications() {
         const fullName = dbBooking.full_name || "Someone";
         const firstName = fullName.split(' ')[0];
         const qty = cleanQuantity(dbBooking.quantity);
-        const newBooking = { name: firstName, quantity: qty };
+        const newBooking = { name: firstName, quantity: qty, city: dbBooking.city ? dbBooking.city.trim() : '' };
         
         // Push to real-time display queue
         newBookingsQueue.push(newBooking);
