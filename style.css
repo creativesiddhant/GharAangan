@@ -1555,6 +1555,10 @@ p {
         grid-column: span 1;
     }
     
+    .footer {
+        padding-bottom: 110px; /* Offset to prevent bottom sticky CTA bar from hiding footer text */
+    }
+    
     .mobile-sticky-cta {
         display: flex; /* Displays on mobile */
     }
