@@ -426,32 +426,7 @@ function initMobilePrebookScroll() {
    7. Recent Bookings Real-Time Notification Logic
    ========================================================================== */
 function initRecentBookingsNotifications() {
-    // List of cities for deterministic location mapping when database does not have city info
-    const IndianCities = ["Delhi", "Mumbai", "Bengaluru", "Dehradun", "Haldwani", "Pune", "Jaipur", "Rishikesh", "Noida", "Gurugram", "Ahmedabad", "Chandigarh", "Lucknow", "Kolkata", "Chennai", "Hyderabad", "Haridwar", "Nainital", "Almora", "Roorkee"];
-    
-    // Rich list of realistic premium pre-seeded bookings to build initial hype
-    const PreSeededBookings = [
-        { name: "Rahul", city: "Delhi", quantity: "2 Litres" },
-        { name: "Priya", city: "Dehradun", quantity: "1 Litre" },
-        { name: "Aarav", city: "Mumbai", quantity: "500ml" },
-        { name: "Amit", city: "Haldwani", quantity: "2 Litres" },
-        { name: "Neha", city: "Bengaluru", quantity: "1 Litre" },
-        { name: "Siddharth", city: "Pune", quantity: "5 Litres" },
-        { name: "Ananya", city: "Jaipur", quantity: "1 Litre" },
-        { name: "Rajesh", city: "Rishikesh", quantity: "2 Litres" },
-        { name: "Kiran", city: "Gurugram", quantity: "500ml" },
-        { name: "Meera", city: "Noida", quantity: "1 Litre" },
-        { name: "Vikram", city: "Haridwar", quantity: "5 Litres" },
-        { name: "Deepa", city: "Ahmedabad", quantity: "2 Litres" },
-        { name: "Rohit", city: "Chandigarh", quantity: "1 Litre" },
-        { name: "Sneha", city: "Delhi", quantity: "2 Litres" },
-        { name: "Vijay", city: "Lucknow", quantity: "5 Litres" },
-        { name: "Shreya", city: "Kolkata", quantity: "1 Litre" },
-        { name: "Raj", city: "Hyderabad", quantity: "2 Litres" },
-        { name: "Pooja", city: "Nainital", quantity: "500ml" }
-    ];
-
-    let bookingsPool = [...PreSeededBookings];
+    let bookingsPool = [];
     let newBookingsQueue = [];
     let displayedCount = 0;
     const maxSessionNotifications = 8; // Session cap for auto-played notifications to remain premium and non-intrusive
@@ -460,16 +435,6 @@ function initRecentBookingsNotifications() {
     const container = document.createElement('div');
     container.className = 'booking-toast-container';
     document.body.appendChild(container);
-
-    // Hash name to get a consistent Indian city (so "Rahul" always maps to the same city on multiple page loads)
-    function getCityForName(name) {
-        let hash = 0;
-        for (let i = 0; i < name.length; i++) {
-            hash = name.charCodeAt(i) + ((hash << 5) - hash);
-        }
-        const index = Math.abs(hash) % IndianCities.length;
-        return IndianCities[index];
-    }
 
     // Standardize quantity strings to clean short-form (e.g. "2 Litres" instead of "2 Litres (2 x 1L Tins)")
     function cleanQuantity(qty) {
@@ -490,18 +455,15 @@ function initRecentBookingsNotifications() {
 
             if (error) throw error;
             if (data && data.length > 0) {
-                const formattedReal = data.map(b => {
+                bookingsPool = data.map(b => {
                     const fullName = b.full_name || "Someone";
                     const firstName = fullName.split(' ')[0];
                     const qty = cleanQuantity(b.quantity);
-                    const city = getCityForName(fullName);
-                    return { name: firstName, city: city, quantity: qty };
+                    return { name: firstName, quantity: qty };
                 });
-                // Seed real bookings at the front of the rotation pool
-                bookingsPool = [...formattedReal, ...PreSeededBookings];
             }
         } catch (err) {
-            console.warn('Real-time notification database load fallback:', err);
+            console.warn('Could not load real bookings from database:', err);
         }
     }
 
@@ -529,7 +491,7 @@ function initRecentBookingsNotifications() {
                 <i class="fa-solid fa-check"></i>
             </div>
             <div class="booking-toast-content">
-                <strong>${booking.name}</strong> from <strong>${booking.city}</strong> recently pre-booked <strong>${booking.quantity}</strong> of our ghee.
+                <strong>${booking.name}</strong> recently pre-booked <strong>${booking.quantity}</strong> of our ghee.
             </div>
             <button class="booking-toast-close" title="Close Notification">
                 <i class="fa-solid fa-xmark"></i>
@@ -579,8 +541,7 @@ function initRecentBookingsNotifications() {
         const fullName = dbBooking.full_name || "Someone";
         const firstName = fullName.split(' ')[0];
         const qty = cleanQuantity(dbBooking.quantity);
-        const city = getCityForName(fullName);
-        const newBooking = { name: firstName, city: city, quantity: qty };
+        const newBooking = { name: firstName, quantity: qty };
         
         // Push to real-time display queue
         newBookingsQueue.push(newBooking);
@@ -605,6 +566,8 @@ function initRecentBookingsNotifications() {
 
     // Start scheduler
     loadHistoricBookings().then(() => {
+        if (bookingsPool.length === 0) return;
+        
         // Initial delay before showing the first booking
         setTimeout(() => {
             showNextNotification();
