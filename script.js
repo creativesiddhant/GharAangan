@@ -447,13 +447,18 @@ function initRecentBookingsNotifications() {
 
     // Load recent actual bookings from Supabase database to dynamically include real names/quantities
     async function loadHistoricBookings() {
-        if (!supabaseClient) return;
+        console.log('[RecentBookings] Initializing notification system...');
+        if (!supabaseClient) {
+            console.warn('[RecentBookings] Supabase client is not initialized. Notifications will only trigger on local form submissions.');
+            return;
+        }
         try {
             // Get prebookings from the last 5 days
             const fiveDaysAgo = new Date();
             fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
             const dateStr = fiveDaysAgo.toISOString();
 
+            console.log('[RecentBookings] Fetching recent pre-bookings from database (last 5 days)...');
             let { data, error } = await supabaseClient
                 .from('prebookings')
                 .select('full_name, quantity, created_at')
@@ -464,6 +469,7 @@ function initRecentBookingsNotifications() {
 
             // Fallback: If no prebookings have been made in the last 5 days, load the last 20 overall to keep notifications active
             if (!data || data.length === 0) {
+                console.log('[RecentBookings] No bookings found in the last 5 days. Fetching last 20 overall pre-bookings...');
                 const res = await supabaseClient
                     .from('prebookings')
                     .select('full_name, quantity, created_at')
@@ -481,9 +487,12 @@ function initRecentBookingsNotifications() {
                     const qty = cleanQuantity(b.quantity);
                     return { name: firstName, quantity: qty };
                 });
+                console.log(`[RecentBookings] Successfully loaded ${bookingsPool.length} bookings to rotate:`, bookingsPool);
+            } else {
+                console.log('[RecentBookings] Database table is empty. No historic bookings found.');
             }
         } catch (err) {
-            console.warn('Could not load real bookings from database:', err);
+            console.error('[RecentBookings] Database SELECT query failed. Check your Supabase RLS Policies. Details:', err);
         }
     }
 
@@ -586,11 +595,15 @@ function initRecentBookingsNotifications() {
 
     // Start scheduler
     loadHistoricBookings().then(() => {
-        if (bookingsPool.length === 0) return;
+        if (bookingsPool.length === 0) {
+            console.log('[RecentBookings] Pool is empty. Automatic sequence skipped.');
+            return;
+        }
         
         let historicCount = 0;
         const targetHistoricCount = 4; // Show 4 historic notifications initially to create hype
         
+        console.log(`[RecentBookings] Starting initial sequence of ${Math.min(targetHistoricCount, bookingsPool.length)} notifications in 10s...`);
         // Initial delay before showing the first booking (10 seconds)
         setTimeout(() => {
             showNextNotification();
@@ -600,6 +613,7 @@ function initRecentBookingsNotifications() {
             const intervalId = setInterval(() => {
                 if (historicCount >= targetHistoricCount || bookingsPool.length === 0) {
                     clearInterval(intervalId); // Stop automatic cycle completely so they can enjoy the website
+                    console.log('[RecentBookings] Initial sequence finished. Auto-play stopped.');
                     return;
                 }
                 showNextNotification();
