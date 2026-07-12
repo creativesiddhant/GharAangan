@@ -3527,7 +3527,7 @@ function renderCharts() {
         }
     });
 
-    // 7B. Geographic demand distribution dataset
+    // 7B. Geographic demand distribution dataset (Litres and Bookings count)
     const locationCounts = {};
     bookingsData.forEach(booking => {
         const city = booking.city ? booking.city.trim() : '';
@@ -3556,16 +3556,21 @@ function renderCharts() {
             qtyLitres = 1;
         }
         
-        locationCounts[locLabel] = (locationCounts[locLabel] || 0) + qtyLitres;
+        if (!locationCounts[locLabel]) {
+            locationCounts[locLabel] = { litres: 0, bookings: 0 };
+        }
+        locationCounts[locLabel].litres += qtyLitres;
+        locationCounts[locLabel].bookings += 1;
     });
 
     const sortedLocations = Object.entries(locationCounts)
         .filter(([label]) => label !== 'Unknown')
-        .sort((a, b) => b[1] - a[1])
+        .sort((a, b) => b[1].litres - a[1].litres)
         .slice(0, 5);
 
     const locationLabels = sortedLocations.map(item => item[0]);
-    const locationValues = sortedLocations.map(item => item[1]);
+    const locationLitres = sortedLocations.map(item => item[1].litres);
+    const locationBookings = sortedLocations.map(item => item[1].bookings);
 
     if (locationChart) locationChart.destroy();
 
@@ -3574,20 +3579,32 @@ function renderCharts() {
         type: 'bar',
         data: {
             labels: locationLabels,
-            datasets: [{
-                label: 'Total Litres Pre-booked',
-                data: locationValues,
-                backgroundColor: 'rgba(212, 175, 55, 0.75)',
-                borderColor: '#D4AF37',
-                borderWidth: 1.5
-            }]
+            datasets: [
+                {
+                    label: 'Total Litres',
+                    data: locationLitres,
+                    backgroundColor: 'rgba(212, 175, 55, 0.75)',
+                    borderColor: '#D4AF37',
+                    borderWidth: 1.5
+                },
+                {
+                    label: 'Total Bookings',
+                    data: locationBookings,
+                    backgroundColor: 'rgba(30, 63, 32, 0.75)',
+                    borderColor: '#1E3F20',
+                    borderWidth: 1.5
+                }
+            ]
         },
         options: {
             indexAxis: 'y',
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-                legend: { display: false }
+                legend: { 
+                    display: true,
+                    labels: { color: '#5C4B3E' }
+                }
             },
             scales: {
                 x: {
