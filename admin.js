@@ -406,9 +406,23 @@ function parseUserAgent(ua) {
 
 // Update stats, charts, and bookings list
 function updateDashboardView() {
-    updateKPIs();
-    renderCharts();
-    renderBookingsTable();
+    try {
+        updateKPIs();
+    } catch (e) {
+        console.error('Error updating KPIs:', e);
+    }
+    
+    try {
+        renderCharts();
+    } catch (e) {
+        console.error('Error rendering charts:', e);
+    }
+    
+    try {
+        renderBookingsTable();
+    } catch (e) {
+        console.error('Error rendering bookings table:', e);
+    }
 }
 
 /* ==========================================================================
@@ -671,14 +685,27 @@ function initRealtimeSubscription() {
         }, payload => {
             console.log('Real-time Insert Payload:', payload);
             
-            // Push new booking to top of array
-            bookingsData.unshift(payload.new);
-            
-            // Update Dashboard Visuals
-            updateDashboardView();
-
-            // Trigger visual banner sound / display notification
-            triggerRealtimeBanner();
+            // Push new booking to top of array if not already present
+            const alreadyExists = bookingsData.some(b => b.id === payload.new.id);
+            if (!alreadyExists) {
+                bookingsData.unshift(payload.new);
+                updateDashboardView();
+                triggerRealtimeBanner();
+            }
+        })
+        .on('postgres_changes', {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'prebookings'
+        }, payload => {
+            console.log('Real-time Update Payload:', payload);
+            const idx = bookingsData.findIndex(b => b.id === payload.new.id);
+            if (idx !== -1) {
+                bookingsData[idx] = payload.new;
+                updateDashboardView();
+            } else {
+                fetchBookings();
+            }
         })
         .on('postgres_changes', {
             event: 'DELETE',
@@ -1016,6 +1043,8 @@ if (manualBookingForm) {
                 ])
                 .select();
                 
+            console.log('[ManualBooking] Insert response:', { data, error });
+
             if (error) {
                 console.error('Error inserting manual booking:', error.message);
                 alert('Failed to add pre-booking: ' + error.message);
@@ -1035,13 +1064,17 @@ if (manualBookingForm) {
                 closeManualBookingModal();
                 
                 // If real-time did not update (e.g. not connected), we manually reload
+                let addedLocally = false;
                 if (data && data.length > 0) {
                     const alreadyExists = bookingsData.some(b => b.id === data[0].id);
                     if (!alreadyExists) {
                         bookingsData.unshift(data[0]);
                         updateDashboardView();
+                        addedLocally = true;
                     }
-                } else {
+                }
+                
+                if (!addedLocally) {
                     await fetchBookings();
                 }
                 
@@ -1215,19 +1248,29 @@ if (editBookingForm) {
                 .eq('id', id)
                 .select();
 
+            console.log('[EditBooking] Update response:', { data, error });
+
             if (error) {
                 console.error('Error updating booking:', error.message);
                 alert('Failed to update booking: ' + error.message);
             } else {
                 // Update locally
                 const updatedRow = data && data[0];
+                let updated = false;
                 if (updatedRow) {
                     const idx = bookingsData.findIndex(b => b.id === id);
                     if (idx !== -1) {
                         bookingsData[idx] = updatedRow;
                         updateDashboardView();
+                        updated = true;
                     }
                 }
+                
+                // Fallback: If not updated locally (e.g. data returned is empty due to RLS select), reload from DB
+                if (!updated) {
+                    await fetchBookings();
+                }
+                
                 closeEditBookingModal();
             }
         } catch (err) {
