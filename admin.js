@@ -682,13 +682,17 @@ const indianStatesAndCities = {
         "Uproda",
         "Wadrainagar"
     ],
-    "Dadra & Nagar Haveli": [
+    "Dadra and Nagar Haveli and Daman and Diu": [
         "Amal",
         "Amli",
         "Bedpa",
+        "Brancavare",
         "Chikhli",
         "Dadra & Nagar Haveli",
+        "Dagasi",
         "Dahikhed",
+        "Daman",
+        "Diu",
         "Dolara",
         "Galonda",
         "Kanadi",
@@ -699,7 +703,11 @@ const indianStatesAndCities = {
         "Kherdi",
         "Kothar",
         "Luari",
+        "Magarvara",
         "Mashat",
+        "Nagwa",
+        "Pariali",
+        "Passo Covo",
         "Rakholi",
         "Rudana",
         "Saili",
@@ -711,16 +719,6 @@ const indianStatesAndCities = {
         "Vansda",
         "Vasona",
         "Velugam"
-    ],
-    "Daman & Diu": [
-        "Brancavare",
-        "Dagasi",
-        "Daman",
-        "Diu",
-        "Magarvara",
-        "Nagwa",
-        "Pariali",
-        "Passo Covo"
     ],
     "Delhi": [
         "New Delhi",
@@ -1020,7 +1018,7 @@ const indianStatesAndCities = {
         "Udaipur",
         "Una"
     ],
-    "Jammu & Kashmir": [
+    "Jammu and Kashmir": [
         "Akhnoor",
         "Anantnag",
         "Badgam",
@@ -2045,7 +2043,7 @@ const indianStatesAndCities = {
         "Wokha",
         "Zunheboto"
     ],
-    "Orissa": [
+    "Odisha": [
         "Anandapur",
         "Angul",
         "Anugul",
@@ -2179,7 +2177,7 @@ const indianStatesAndCities = {
         "Udala",
         "Umerkote"
     ],
-    "Pondicherry": [
+    "Puducherry": [
         "Bahur",
         "Karaikal",
         "Mahe",
@@ -2848,7 +2846,7 @@ const indianStatesAndCities = {
         "Varanasi",
         "Zamania"
     ],
-    "Uttaranchal": [
+    "Uttarakhand": [
         "Almora",
         "Bageshwar",
         "Bhatwari",
@@ -2964,6 +2962,10 @@ const indianStatesAndCities = {
         "Suri",
         "Takipur",
         "Tamluk"
+    ],
+    "Ladakh": [
+        "Kargil",
+        "Leh"
     ]
 };
 
