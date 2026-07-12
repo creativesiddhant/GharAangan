@@ -443,17 +443,37 @@ function initRecentBookingsNotifications() {
         return match ? match[1] : qty;
     }
 
+    let currentPoolIndex = 0;
+
     // Load recent actual bookings from Supabase database to dynamically include real names/quantities
     async function loadHistoricBookings() {
         if (!supabaseClient) return;
         try {
-            const { data, error } = await supabaseClient
+            // Get prebookings from the last 5 days
+            const fiveDaysAgo = new Date();
+            fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
+            const dateStr = fiveDaysAgo.toISOString();
+
+            let { data, error } = await supabaseClient
                 .from('prebookings')
-                .select('full_name, quantity')
-                .order('created_at', { ascending: false })
-                .limit(20);
+                .select('full_name, quantity, created_at')
+                .gte('created_at', dateStr)
+                .order('created_at', { ascending: false });
 
             if (error) throw error;
+
+            // Fallback: If no prebookings have been made in the last 5 days, load the last 20 overall to keep notifications active
+            if (!data || data.length === 0) {
+                const res = await supabaseClient
+                    .from('prebookings')
+                    .select('full_name, quantity, created_at')
+                    .order('created_at', { ascending: false })
+                    .limit(20);
+                
+                if (res.error) throw res.error;
+                data = res.data;
+            }
+
             if (data && data.length > 0) {
                 bookingsPool = data.map(b => {
                     const fullName = b.full_name || "Someone";
@@ -522,16 +542,16 @@ function initRecentBookingsNotifications() {
         }, 6000);
     }
 
-    // Pull from real-time queue or pick from previous/historic pool
+    // Pull from real-time queue or pick sequentially from previous/historic pool
     function showNextNotification() {
         if (newBookingsQueue.length > 0) {
             const nextNew = newBookingsQueue.shift();
             showNotification(nextNew, true);
         } else {
             if (bookingsPool.length === 0) return;
-            // Draw a random booking from the pool
-            const randomIndex = Math.floor(Math.random() * bookingsPool.length);
-            const booking = bookingsPool[randomIndex];
+            // Draw sequentially one by one
+            const booking = bookingsPool[currentPoolIndex];
+            currentPoolIndex = (currentPoolIndex + 1) % bookingsPool.length;
             showNotification(booking, false);
         }
     }
