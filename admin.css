@@ -468,9 +468,21 @@ body {
 
 /* Charts Grid */
 .charts-section {
-    display: grid;
-    grid-template-columns: 1fr 1.2fr;
+    display: flex;
+    flex-direction: column;
     gap: 24px;
+}
+
+.charts-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+}
+
+@media (max-width: 1024px) {
+    .charts-row {
+        grid-template-columns: 1fr;
+    }
 }
 
 .chart-card {

@@ -3006,6 +3006,7 @@ function bindStateCityAutocomplete(stateElement, cityElement) {
 let bookingsData = [];
 let visitsData = [];
 let quantityChart = null;
+let locationChart = null;
 let timelineChart = null;
 let realtimeChannel = null;
 
@@ -3526,7 +3527,83 @@ function renderCharts() {
         }
     });
 
-    // 7B. Daily Trend line chart dataset
+    // 7B. Geographic demand distribution dataset
+    const locationCounts = {};
+    bookingsData.forEach(booking => {
+        const city = booking.city ? booking.city.trim() : '';
+        const state = booking.state ? booking.state.trim() : '';
+        let locLabel = 'Unknown';
+        
+        if (city && state) {
+            locLabel = `${city} (${state})`;
+        } else if (city) {
+            locLabel = city;
+        } else if (state) {
+            locLabel = state;
+        }
+        
+        let qtyLitres = 0;
+        if (booking.quantity) {
+            if (booking.quantity.includes('500ml')) qtyLitres = 0.5;
+            else if (booking.quantity.includes('1 Litre')) qtyLitres = 1;
+            else if (booking.quantity.includes('2 Litres')) qtyLitres = 2;
+            else if (booking.quantity.includes('5 Litres')) qtyLitres = 5;
+            else {
+                const match = booking.quantity.match(/^(\d+(?:\.\d+)?)/);
+                qtyLitres = match ? parseFloat(match[1]) : 1;
+            }
+        } else {
+            qtyLitres = 1;
+        }
+        
+        locationCounts[locLabel] = (locationCounts[locLabel] || 0) + qtyLitres;
+    });
+
+    const sortedLocations = Object.entries(locationCounts)
+        .filter(([label]) => label !== 'Unknown')
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
+
+    const locationLabels = sortedLocations.map(item => item[0]);
+    const locationValues = sortedLocations.map(item => item[1]);
+
+    if (locationChart) locationChart.destroy();
+
+    const locCtx = document.getElementById('locationChart').getContext('2d');
+    locationChart = new Chart(locCtx, {
+        type: 'bar',
+        data: {
+            labels: locationLabels,
+            datasets: [{
+                label: 'Total Litres Pre-booked',
+                data: locationValues,
+                backgroundColor: 'rgba(212, 175, 55, 0.75)',
+                borderColor: '#D4AF37',
+                borderWidth: 1.5
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: false }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    ticks: { color: '#5C4B3E' },
+                    grid: { color: '#EBE4DA' }
+                },
+                y: {
+                    ticks: { color: '#5C4B3E' },
+                    grid: { display: false }
+                }
+            }
+        }
+    });
+
+    // 7C. Daily Trend line chart dataset
     const dailyTrend = {};
     
     // Sort chronologically (oldest to newest for plotting timeline)

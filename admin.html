@@ -140,14 +140,27 @@
 
             <!-- Analytics Charts Section -->
             <section class="charts-section">
-                <!-- Chart 1: Quantity Distribution -->
-                <div class="chart-card">
-                    <div class="chart-card-header">
-                        <h3>Package Demand Distribution</h3>
-                        <p>Visualizing which package has more demand</p>
+                <div class="charts-row">
+                    <!-- Chart 1: Quantity Distribution -->
+                    <div class="chart-card">
+                        <div class="chart-card-header">
+                            <h3>Package Demand Distribution</h3>
+                            <p>Visualizing which package has more demand</p>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="quantityChart"></canvas>
+                        </div>
                     </div>
-                    <div class="chart-container">
-                        <canvas id="quantityChart"></canvas>
+
+                    <!-- Chart 3: Geographic Distribution -->
+                    <div class="chart-card">
+                        <div class="chart-card-header">
+                            <h3>Geographic Demand Distribution</h3>
+                            <p>Top cities pre-ordering our ghee (Litres)</p>
+                        </div>
+                        <div class="chart-container">
+                            <canvas id="locationChart"></canvas>
+                        </div>
                     </div>
                 </div>
 
