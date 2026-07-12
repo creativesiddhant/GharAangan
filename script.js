@@ -50,21 +50,39 @@ const indianStatesAndCities = {
     "West Bengal": ["Kolkata", "Howrah", "Darjeeling", "Siliguri", "Asansol", "Durgapur", "Maheshtala", "Rajpur Sonarpur", "Gopalpur", "Bhatpara", "Kharagpur"]
 };
 
-function bindStateCityAutocomplete(stateElement, cityElement, datalistElement) {
-    if (!stateElement || !cityElement || !datalistElement) return;
+function bindStateCityAutocomplete(stateElement, cityElement) {
+    if (!stateElement || !cityElement) return;
 
     stateElement.addEventListener('change', () => {
         const selectedState = stateElement.value;
-        cityElement.value = ''; // clear previous city selection
-        datalistElement.innerHTML = ''; // clear previous options
+        cityElement.innerHTML = ''; // clear previous options
 
         if (selectedState && indianStatesAndCities[selectedState]) {
+            // Add placeholder option
+            const defaultOpt = document.createElement('option');
+            defaultOpt.value = '';
+            defaultOpt.disabled = true;
+            defaultOpt.selected = true;
+            defaultOpt.textContent = 'Select City';
+            cityElement.appendChild(defaultOpt);
+
             indianStatesAndCities[selectedState].forEach(city => {
                 const option = document.createElement('option');
                 option.value = city;
-                datalistElement.appendChild(option);
+                option.textContent = city;
+                cityElement.appendChild(option);
             });
+        } else {
+            const defaultOpt = document.createElement('option');
+            defaultOpt.value = '';
+            defaultOpt.disabled = true;
+            defaultOpt.selected = true;
+            defaultOpt.textContent = 'Select State first';
+            cityElement.appendChild(defaultOpt);
         }
+        
+        // Trigger change event to clear errors if needed
+        cityElement.dispatchEvent(new Event('change'));
     });
 }
 
@@ -202,8 +220,8 @@ function initFormValidation() {
 
     if (!form) return;
 
-    // Initialize State & City dynamic datalist binding
-    bindStateCityAutocomplete(stateInput, cityInput, document.getElementById('city-datalist'));
+    // Initialize State & City dynamic dropdown binding
+    bindStateCityAutocomplete(stateInput, cityInput);
 
     // Direct input check helpers
     nameInput.addEventListener('input', () => {
@@ -222,7 +240,7 @@ function initFormValidation() {
     });
 
     if (cityInput) {
-        cityInput.addEventListener('input', () => {
+        cityInput.addEventListener('change', () => {
             validateField(cityInput, cityInput.value.trim().length > 1, 'city-error');
         });
     }

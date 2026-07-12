@@ -49,20 +49,35 @@ const indianStatesAndCities = {
     "West Bengal": ["Kolkata", "Howrah", "Darjeeling", "Siliguri", "Asansol", "Durgapur", "Maheshtala", "Rajpur Sonarpur", "Gopalpur", "Bhatpara", "Kharagpur"]
 };
 
-function bindStateCityAutocomplete(stateElement, cityElement, datalistElement) {
-    if (!stateElement || !cityElement || !datalistElement) return;
+function bindStateCityAutocomplete(stateElement, cityElement) {
+    if (!stateElement || !cityElement) return;
 
     stateElement.addEventListener('change', () => {
         const selectedState = stateElement.value;
-        cityElement.value = ''; // clear previous city selection
-        datalistElement.innerHTML = ''; // clear previous options
+        cityElement.innerHTML = ''; // clear previous options
 
         if (selectedState && indianStatesAndCities[selectedState]) {
+            // Add placeholder option
+            const defaultOpt = document.createElement('option');
+            defaultOpt.value = '';
+            defaultOpt.disabled = true;
+            defaultOpt.selected = true;
+            defaultOpt.textContent = 'Select City';
+            cityElement.appendChild(defaultOpt);
+
             indianStatesAndCities[selectedState].forEach(city => {
                 const option = document.createElement('option');
                 option.value = city;
-                datalistElement.appendChild(option);
+                option.textContent = city;
+                cityElement.appendChild(option);
             });
+        } else {
+            const defaultOpt = document.createElement('option');
+            defaultOpt.value = '';
+            defaultOpt.disabled = true;
+            defaultOpt.selected = true;
+            defaultOpt.textContent = 'Select State first';
+            cityElement.appendChild(defaultOpt);
         }
     });
 }
@@ -1221,20 +1236,32 @@ window.openEditBookingModal = function(id) {
     const stateVal = booking.state || '';
     editStateInput.value = stateVal;
     
-    // Clear datalist and populate it with cities of this state
-    const editCityDatalist = document.getElementById('edit-city-datalist');
-    if (editCityDatalist) {
-        editCityDatalist.innerHTML = '';
-        if (stateVal && indianStatesAndCities[stateVal]) {
-            indianStatesAndCities[stateVal].forEach(city => {
-                const option = document.createElement('option');
-                option.value = city;
-                editCityDatalist.appendChild(option);
-            });
-        }
+    // Clear and populate city select dropdown
+    editCityInput.innerHTML = '';
+    if (stateVal && indianStatesAndCities[stateVal]) {
+        // Add placeholder option
+        const defaultOpt = document.createElement('option');
+        defaultOpt.value = '';
+        defaultOpt.disabled = true;
+        defaultOpt.textContent = 'Select City';
+        editCityInput.appendChild(defaultOpt);
+
+        indianStatesAndCities[stateVal].forEach(city => {
+            const option = document.createElement('option');
+            option.value = city;
+            option.textContent = city;
+            editCityInput.appendChild(option);
+        });
+        
+        editCityInput.value = booking.city || '';
+    } else {
+        const defaultOpt = document.createElement('option');
+        defaultOpt.value = '';
+        defaultOpt.disabled = true;
+        defaultOpt.selected = true;
+        defaultOpt.textContent = 'Select State first';
+        editCityInput.appendChild(defaultOpt);
     }
-    
-    editCityInput.value = booking.city || '';
     editQuantitySelect.value = booking.quantity || '';
 
     // Show modal
@@ -1360,14 +1387,12 @@ if (editBookingForm) {
 // Bind autocomplete for Manual Booking Modal
 bindStateCityAutocomplete(
     document.getElementById('manual-state'),
-    document.getElementById('manual-city'),
-    document.getElementById('manual-city-datalist')
+    document.getElementById('manual-city')
 );
 
 // Bind autocomplete for Edit Booking Modal
 bindStateCityAutocomplete(
     document.getElementById('edit-state'),
-    document.getElementById('edit-city'),
-    document.getElementById('edit-city-datalist')
+    document.getElementById('edit-city')
 );
 

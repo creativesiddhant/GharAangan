@@ -483,9 +483,12 @@
                             <!-- City -->
                             <div class="input-group">
                                 <label for="city"><i class="fa-solid fa-city"></i> City</label>
-                                <input type="text" id="city" list="city-datalist" placeholder="Select or type city" required>
-                                <datalist id="city-datalist"></datalist>
-                                <span class="error-msg" id="city-error">Please select or enter your city</span>
+                                <div class="custom-select-wrapper">
+                                    <select id="city" required>
+                                        <option value="" disabled selected>Select State first</option>
+                                    </select>
+                                </div>
+                                <span class="error-msg" id="city-error">Please select your city</span>
                             </div>
                         </div>
 

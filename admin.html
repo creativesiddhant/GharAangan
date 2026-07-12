@@ -316,8 +316,11 @@
                     </div>
                     <div class="input-group" id="manual-city-group">
                         <label for="manual-city"><i class="fa-solid fa-city"></i> City</label>
-                        <input type="text" id="manual-city" list="manual-city-datalist" placeholder="Select or type city">
-                        <datalist id="manual-city-datalist"></datalist>
+                        <div class="custom-select-wrapper">
+                            <select id="manual-city">
+                                <option value="" disabled selected>Select State first</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
                 
@@ -414,8 +417,11 @@
                     </div>
                     <div class="input-group" id="edit-city-group">
                         <label for="edit-city"><i class="fa-solid fa-city"></i> City</label>
-                        <input type="text" id="edit-city" list="edit-city-datalist" placeholder="Select or type city">
-                        <datalist id="edit-city-datalist"></datalist>
+                        <div class="custom-select-wrapper">
+                            <select id="edit-city">
+                                <option value="" disabled selected>Select State first</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
                 
