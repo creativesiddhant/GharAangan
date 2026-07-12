@@ -537,18 +537,17 @@ function initRecentBookingsNotifications() {
 
     let currentToast = null;
     let toastTimeout = null;
+    let lastToastClosedAt = 0;
+    const minToastGap = 3000; // 3 seconds gap between any two notifications
 
     // Build and slide in a notification toast
     function showNotification(booking, isNew = false) {
         // Enforce notification limits on automatic/seeded notifications (live/real-time updates always show)
         if (displayedCount >= maxSessionNotifications && !isNew) return;
 
-        // Animate out the active toast if present
+        // Remove active toast if present (immediate close without cooldown since we are transitioning)
         if (currentToast) {
-            currentToast.classList.remove('active');
-            const oldToast = currentToast;
-            setTimeout(() => oldToast.remove(), 600);
-            clearTimeout(toastTimeout);
+            closeToast(false);
         }
 
         const toast = document.createElement('div');
@@ -575,23 +574,47 @@ function initRecentBookingsNotifications() {
 
         // Manual Close trigger
         const closeBtn = toast.querySelector('.booking-toast-close');
-        closeBtn.addEventListener('click', () => {
-            toast.classList.remove('active');
-            setTimeout(() => toast.remove(), 600);
-            if (currentToast === toast) currentToast = null;
-            clearTimeout(toastTimeout);
-        });
+        closeBtn.addEventListener('click', () => closeToast(true));
 
         // Auto fade out timer (4 seconds display time)
-        toastTimeout = setTimeout(() => {
+        toastTimeout = setTimeout(() => closeToast(true), 4000);
+
+        // Helper to close current toast with cooldown logic
+        function closeToast(withCooldown = true) {
+            if (!toast.parentNode) return;
             toast.classList.remove('active');
-            setTimeout(() => toast.remove(), 600);
-            if (currentToast === toast) currentToast = null;
-        }, 4000);
+            
+            setTimeout(() => {
+                toast.remove();
+                // Dispatch event after fully animated out
+                window.dispatchEvent(new CustomEvent('toast-closed', { detail: { isNew: isNew } }));
+            }, 600);
+            
+            if (currentToast === toast) {
+                currentToast = null;
+                if (withCooldown) {
+                    lastToastClosedAt = Date.now();
+                }
+            }
+            clearTimeout(toastTimeout);
+        }
     }
 
     // Pull from real-time queue or pick sequentially from previous/historic pool
     function showNextNotification() {
+        const now = Date.now();
+        const timeSinceLastClose = now - lastToastClosedAt;
+
+        // If a toast is currently active, do not show another one right now
+        if (currentToast) return;
+
+        // If we are in the 3-second cooldown gap, schedule it to run after the gap expires
+        if (timeSinceLastClose < minToastGap) {
+            const delay = minToastGap - timeSinceLastClose;
+            setTimeout(showNextNotification, delay);
+            return;
+        }
+
         if (newBookingsQueue.length > 0) {
             const nextNew = newBookingsQueue.shift();
             showNotification(nextNew, true);
@@ -617,12 +640,8 @@ function initRecentBookingsNotifications() {
         // Prepend to pool so it rotates in later
         bookingsPool.unshift(newBooking);
 
-        // Display immediately (smooth offset if another toast is active)
-        if (currentToast) {
-            setTimeout(showNextNotification, 1000);
-        } else {
-            showNextNotification();
-        }
+        // Trigger next display check
+        showNextNotification();
     }
 
     // Intercept local submissions (so the browser owner instantly sees their booking reflected)
@@ -642,22 +661,30 @@ function initRecentBookingsNotifications() {
         let historicCount = 0;
         const targetHistoricCount = 4; // Show 4 historic notifications initially to create hype
         
+        // Helper to queue the next automatic notification with a 3s gap
+        function scheduleNextAuto() {
+            if (historicCount >= targetHistoricCount || bookingsPool.length === 0) {
+                console.log('[RecentBookings] Initial sequence finished. Auto-play stopped.');
+                return;
+            }
+            setTimeout(() => {
+                showNextNotification();
+                historicCount++;
+            }, 3000); // 3 seconds gap of silence after previous fully closes
+        }
+
+        // Listener to chain the next automatic display from the close event
+        window.addEventListener('toast-closed', (e) => {
+            if (e.detail && !e.detail.isNew) {
+                scheduleNextAuto();
+            }
+        });
+
         console.log(`[RecentBookings] Starting initial sequence of ${Math.min(targetHistoricCount, bookingsPool.length)} notifications in 10s...`);
         // Initial delay before showing the first booking (10 seconds)
         setTimeout(() => {
             showNextNotification();
             historicCount++;
-            
-            // Show the remaining 3 notifications in a fast sequence (every 5 seconds)
-            const intervalId = setInterval(() => {
-                if (historicCount >= targetHistoricCount || bookingsPool.length === 0) {
-                    clearInterval(intervalId); // Stop automatic cycle completely so they can enjoy the website
-                    console.log('[RecentBookings] Initial sequence finished. Auto-play stopped.');
-                    return;
-                }
-                showNextNotification();
-                historicCount++;
-            }, 5000);
         }, 10000);
     });
 
