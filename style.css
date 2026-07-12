@@ -1221,6 +1221,10 @@ p {
     color: #7A6C62;
 }
 
+.footer-bottom a:hover {
+    color: var(--gold) !important;
+}
+
 /* Sticky Mobile CTA Bar */
 .mobile-sticky-cta {
     position: fixed;
