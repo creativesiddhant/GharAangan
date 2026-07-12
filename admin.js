@@ -749,60 +749,112 @@ exportCsvBtn.addEventListener('click', () => {
     document.body.removeChild(link);
 });
 
+// Helper for custom confirmation modal
+function showConfirm(title, message, onConfirm) {
+    const modal = document.getElementById('confirm-modal');
+    const titleEl = document.getElementById('confirm-title');
+    const messageEl = document.getElementById('confirm-message');
+    const cancelBtn = document.getElementById('confirm-cancel-btn');
+    const okBtn = document.getElementById('confirm-ok-btn');
+    
+    if (!modal || !titleEl || !messageEl || !cancelBtn || !okBtn) {
+        // Fallback to standard confirm
+        if (confirm(message)) {
+            onConfirm();
+        }
+        return;
+    }
+    
+    titleEl.textContent = title;
+    messageEl.textContent = message;
+    
+    // Clear previous event listeners by cloning
+    const newCancelBtn = cancelBtn.cloneNode(true);
+    const newOkBtn = okBtn.cloneNode(true);
+    cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+    okBtn.parentNode.replaceChild(newOkBtn, okBtn);
+    
+    modal.classList.add('active');
+    
+    newCancelBtn.addEventListener('click', () => {
+        modal.classList.remove('active');
+    });
+    
+    newOkBtn.addEventListener('click', () => {
+        modal.classList.remove('active');
+        onConfirm();
+    });
+    
+    // Also close on overlay click
+    const handleBackdrop = (e) => {
+        if (e.target === modal) {
+            modal.classList.remove('active');
+            modal.removeEventListener('click', handleBackdrop);
+        }
+    };
+    modal.addEventListener('click', handleBackdrop);
+}
+
 // 11. Delete Pre-booking Action (authenticated users only via RLS)
 window.deleteBooking = async function(id) {
     if (!supabaseClient) return;
 
-    const confirmDelete = confirm("Are you sure you want to delete this pre-booking entry? This action cannot be undone.");
-    if (!confirmDelete) return;
+    showConfirm(
+        "Delete Pre-booking",
+        "Are you sure you want to delete this pre-booking entry? This action cannot be undone.",
+        async () => {
+            try {
+                const { error } = await supabaseClient
+                    .from('prebookings')
+                    .delete()
+                    .eq('id', id);
 
-    try {
-        const { error } = await supabaseClient
-            .from('prebookings')
-            .delete()
-            .eq('id', id);
-
-        if (error) {
-            console.error('Error deleting booking:', error.message);
-            alert('Failed to delete booking: ' + error.message);
-        } else {
-            // Delete locally from bookingsData array to trigger instant UI refresh
-            bookingsData = bookingsData.filter(booking => booking.id !== id);
-            updateDashboardView();
+                if (error) {
+                    console.error('Error deleting booking:', error.message);
+                    alert('Failed to delete booking: ' + error.message);
+                } else {
+                    // Delete locally from bookingsData array to trigger instant UI refresh
+                    bookingsData = bookingsData.filter(booking => booking.id !== id);
+                    updateDashboardView();
+                }
+            } catch (err) {
+                console.error('Delete exception:', err);
+                alert('An unexpected error occurred while deleting.');
+            }
         }
-    } catch (err) {
-        console.error('Delete exception:', err);
-        alert('An unexpected error occurred while deleting.');
-    }
+    );
 };
 
 // 12. Clear Visitor Logs Action (authenticated users only via RLS)
 if (clearVisitsBtn) {
-    clearVisitsBtn.addEventListener('click', async () => {
+    clearVisitsBtn.addEventListener('click', () => {
         if (!supabaseClient) return;
 
-        const confirmClear = confirm("Are you sure you want to clear ALL visitor logs? This action cannot be undone.");
-        if (!confirmClear) return;
+        showConfirm(
+            "Clear Visitor Logs",
+            "Are you sure you want to clear ALL visitor logs? This action cannot be undone.",
+            async () => {
+                try {
+                    const { error } = await supabaseClient
+                        .from('site_visits')
+                        .delete()
+                        .gt('id', 0);
 
-        try {
-            const { error } = await supabaseClient
-                .from('site_visits')
-                .delete()
-                .gt('id', 0);
-
-            if (error) {
-                console.error('Error clearing visits:', error.message);
-                alert('Failed to clear visitor logs: ' + error.message);
-            } else {
-                visitsData = [];
-                // Re-fetch to ensure the RPC total count is maintained and view is updated
-                fetchVisits();
-                alert('Visitor logs cleared successfully.');
+                    if (error) {
+                        console.error('Error clearing visits:', error.message);
+                        alert('Failed to clear visitor logs: ' + error.message);
+                    } else {
+                        visitsData = [];
+                        // Re-fetch to ensure the RPC total count is maintained and view is updated
+                        fetchVisits();
+                        alert('Visitor logs cleared successfully.');
+                    }
+                } catch (err) {
+                    console.error('Clear visits exception:', err);
+                    alert('An unexpected error occurred while clearing visitor logs.');
+                }
             }
-        } catch (err) {
-            console.error('Clear visits exception:', err);
-            alert('An unexpected error occurred while clearing visitor logs.');
-        }
+        );
     });
 }
 

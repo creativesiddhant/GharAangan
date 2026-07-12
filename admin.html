@@ -288,6 +288,22 @@
         </div>
     </div>
 
+    <!-- Custom Confirmation Modal -->
+    <div id="confirm-modal" class="modal-overlay">
+        <div class="modal-card" style="max-width: 400px; text-align: center;">
+            <div style="font-size: 3rem; color: var(--danger); margin-bottom: 16px;">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3 id="confirm-title" style="font-family: var(--font-serif); font-size: 1.5rem; color: var(--primary-green); margin-bottom: 12px; font-weight: 700;">Are you sure?</h3>
+            <p id="confirm-message" style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 24px; line-height: 1.5;"></p>
+            
+            <div style="display: flex; gap: 12px; justify-content: center;">
+                <button type="button" id="confirm-cancel-btn" class="btn btn-secondary btn-sm" style="border-radius: var(--border-radius-md); padding: 10px 20px;">Cancel</button>
+                <button type="button" id="confirm-ok-btn" class="btn btn-primary btn-sm" style="background-color: var(--danger); border-color: var(--danger); border-radius: var(--border-radius-md); padding: 10px 20px; color: var(--white);">Confirm</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Supabase Client CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="admin.js"></script>
