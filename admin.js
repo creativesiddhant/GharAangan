@@ -3007,7 +3007,7 @@ let bookingsData = [];
 let visitsData = [];
 let quantityChart = null;
 let locationChart = null;
-let timelineChart = null;
+let visitorChart = null;
 let realtimeChannel = null;
 
 // 3. DOM Elements
@@ -3603,56 +3603,61 @@ function renderCharts() {
         }
     });
 
-    // 7C. Daily Trend line chart dataset
-    const dailyTrend = {};
-    
-    // Sort chronologically (oldest to newest for plotting timeline)
-    const sortedData = [...bookingsData].reverse();
-
-    sortedData.forEach(booking => {
-        if (!booking.created_at) return;
-        const dateStr = new Date(booking.created_at).toLocaleDateString('en-IN', {
-            day: 'numeric',
-            month: 'short'
-        });
-        dailyTrend[dateStr] = (dailyTrend[dateStr] || 0) + 1;
+    // 7C. Visitor Location distribution dataset
+    const visitorLocationCounts = {};
+    visitsData.forEach(visit => {
+        const city = visit.city ? visit.city.trim() : '';
+        const region = visit.region ? visit.region.trim() : '';
+        let locLabel = 'Unknown';
+        
+        if (city && region && city !== 'Unknown' && region !== 'Unknown') {
+            locLabel = `${city} (${region})`;
+        } else if (city && city !== 'Unknown') {
+            locLabel = city;
+        } else if (region && region !== 'Unknown') {
+            locLabel = region;
+        }
+        
+        visitorLocationCounts[locLabel] = (visitorLocationCounts[locLabel] || 0) + 1;
     });
 
-    const timelineLabels = Object.keys(dailyTrend);
-    const timelineValues = Object.values(dailyTrend);
+    const sortedVisitorLocations = Object.entries(visitorLocationCounts)
+        .filter(([label]) => label !== 'Unknown' && label !== 'undefined (undefined)')
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 10);
 
-    if (timelineChart) timelineChart.destroy();
+    const visitorLabels = sortedVisitorLocations.map(item => item[0]);
+    const visitorValues = sortedVisitorLocations.map(item => item[1]);
 
-    const timeCtx = document.getElementById('timelineChart').getContext('2d');
-    timelineChart = new Chart(timeCtx, {
-        type: 'line',
+    if (visitorChart) visitorChart.destroy();
+
+    const visitorCtx = document.getElementById('visitorChart').getContext('2d');
+    visitorChart = new Chart(visitorCtx, {
+        type: 'bar',
         data: {
-            labels: timelineLabels,
+            labels: visitorLabels,
             datasets: [{
-                label: 'New Bookings',
-                data: timelineValues,
-                fill: true,
-                backgroundColor: 'rgba(30, 63, 32, 0.1)',
+                label: 'Unique Visits',
+                data: visitorValues,
+                backgroundColor: 'rgba(30, 63, 32, 0.75)',
                 borderColor: '#1E3F20',
-                borderWidth: 2,
-                tension: 0.3,
-                pointBackgroundColor: '#D4AF37',
-                pointRadius: 4
+                borderWidth: 1.5
             }]
         },
         options: {
+            indexAxis: 'y',
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
                 legend: { display: false }
             },
             scales: {
-                y: {
+                x: {
                     beginAtZero: true,
-                    ticks: { stepSize: 1, color: '#5C4B3E' },
+                    ticks: { color: '#5C4B3E', stepSize: 1 },
                     grid: { color: '#EBE4DA' }
                 },
-                x: {
+                y: {
                     ticks: { color: '#5C4B3E' },
                     grid: { display: false }
                 }
