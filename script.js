@@ -269,17 +269,13 @@ function initFormValidation() {
 
     if (cityInput) {
         cityInput.addEventListener('change', () => {
-            if (cityInput.value === 'Other') {
-                validateField(cityManualInput, cityManualInput.value.trim().length > 1, 'city-manual-error');
-            } else {
-                validateField(cityInput, cityInput.value.trim().length > 1, 'city-error');
-            }
+            validateField(cityInput, true, 'city-error');
         });
     }
 
     if (cityManualInput) {
         cityManualInput.addEventListener('input', () => {
-            validateField(cityManualInput, cityManualInput.value.trim().length > 1, 'city-manual-error');
+            validateField(cityManualInput, true, 'city-manual-error');
         });
     }
 
@@ -305,14 +301,7 @@ function initFormValidation() {
         const isNameValid = validateField(nameInput, nameInput.value.trim().length > 1, 'name-error');
         const isMobileValid = validateField(mobileInput, /^[6-9]\d{9}$/.test(mobileInput.value), 'mobile-error');
         const isQtyValid = validateField(quantitySelect, quantitySelect.value !== '', 'quantity-error');
-        let isCityValid = true;
-        if (cityInput) {
-            if (cityInput.value === 'Other') {
-                isCityValid = validateField(cityManualInput, cityManualInput.value.trim().length > 1, 'city-manual-error');
-            } else {
-                isCityValid = validateField(cityInput, cityInput.value !== '', 'city-error');
-            }
-        }
+        const isCityValid = true; // City is optional
         const isStateValid = true; // State is optional
 
         if (!isNameValid || !isMobileValid || !isQtyValid || !isCityValid || !isStateValid) {
