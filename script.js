@@ -3038,6 +3038,7 @@ function bindStateCityAutocomplete(stateElement, cityElement, manualGroupElement
 
 document.addEventListener('DOMContentLoaded', () => {
     initMobileMenu();
+    initPricePreview();
     initCountdown();
     initScrollAnimations();
     initFaqAccordion();
@@ -3764,3 +3765,33 @@ function initMobileMenu() {
         }
     });
 }
+
+/* ==========================================================================
+   9. Pre-booking Price Preview Logic
+   ========================================================================== */
+function initPricePreview() {
+    const qtySelect = document.getElementById('ghee-quantity');
+    const previewContainer = document.getElementById('price-preview-container');
+    const priceValue = document.getElementById('price-value');
+
+    if (!qtySelect || !previewContainer || !priceValue) return;
+
+    // Launch Pre-booking prices list
+    const prices = {
+        '500ml': '₹562.50',
+        '1 Litre': '₹1,126.00',
+        '2 Litres': '₹2,252.00',
+        '5 Litres': '₹5,628.00'
+    };
+
+    qtySelect.addEventListener('change', () => {
+        const val = qtySelect.value;
+        if (prices[val]) {
+            priceValue.textContent = prices[val];
+            previewContainer.classList.remove('hidden');
+        } else {
+            previewContainer.classList.add('hidden');
+        }
+    });
+}
+
