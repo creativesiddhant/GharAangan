@@ -3852,7 +3852,7 @@ function triggerRealtimeBanner() {
 }
 
 /* ==========================================================================
-   10. CSV Exporter Utility
+   10. CSV Exporter Utility (Shopify Customer Schema)
    ========================================================================== */
 exportCsvBtn.addEventListener('click', () => {
     if (bookingsData.length === 0) {
@@ -3860,18 +3860,90 @@ exportCsvBtn.addEventListener('click', () => {
         return;
     }
 
+    // Shopify Customer CSV Headers (Official Schema)
+    const headers = [
+        "First Name", "Last Name", "Email", "Company", "Address1", "Address2",
+        "City", "Province", "Province Code", "Country", "Country Code", "Zip",
+        "Phone", "Accepts Marketing", "Total Spent", "Total Orders", "Tags", "Note", "Tax Exempt"
+    ];
+
     let csvContent = "data:text/csv;charset=utf-8,";
-    csvContent += "Date & Time,Full Name,Mobile Number,City,State,Quantity Selected\n";
+    csvContent += headers.join(",") + "\n";
 
     bookingsData.forEach(booking => {
-        const date = new Date(booking.created_at).toISOString().replace(/T/, ' ').replace(/\..+/, '');
-        const name = `"${(booking.full_name || '').replace(/"/g, '""')}"`;
-        const mobile = `"${booking.mobile_number || ''}"`;
-        const city = `"${(booking.city || '').replace(/"/g, '""')}"`;
-        const state = `"${(booking.state || '').replace(/"/g, '""')}"`;
-        const qty = `"${booking.quantity || ''}"`;
+        // 1. Split Full Name into First Name & Last Name
+        const nameParts = (booking.full_name || '').trim().split(/\s+/);
+        const firstName = nameParts[0] || '';
+        const lastName = nameParts.slice(1).join(' ') || '';
+
+        // 2. Format Mobile Number (+91 prefix for India if 10-digit number)
+        let rawMobile = (booking.mobile_number || '').trim();
+        let phone = '';
+        if (rawMobile) {
+            // Remove non-digit characters just in case
+            rawMobile = rawMobile.replace(/\D/g, '');
+            if (rawMobile.length === 10) {
+                phone = `+91${rawMobile}`;
+            } else if (rawMobile.length > 10 && rawMobile.startsWith('91')) {
+                phone = `+${rawMobile}`;
+            } else {
+                phone = rawMobile; // Fallback
+            }
+        }
+
+        // 3. Format pre-booked item details as Tags
+        const qty = booking.quantity || '';
+        const dateStr = booking.created_at ? new Date(booking.created_at).toISOString().substring(0, 10) : '';
         
-        csvContent += `${date},${name},${mobile},${city},${state},${qty}\n`;
+        // Shopify tags: comma-separated list of tags
+        const tagsList = ["Prebooking", `Qty: ${qty}`];
+        const tags = `"${tagsList.join(', ')}"`;
+
+        // 4. Create Note with date & time info
+        const note = `"Pre-booked ${qty} of Ghar Aangan Pahadi Ghee on ${dateStr} via Coming Soon Landing Page."`;
+
+        // 5. Address / Location
+        const city = `"${(booking.city || '').replace(/"/g, '""')}"`;
+        const province = `"${(booking.state || '').replace(/"/g, '""')}"`;
+        
+        // Empty columns for uncollected fields
+        const email = "";
+        const company = "";
+        const address1 = "";
+        const address2 = "";
+        const provinceCode = ""; // Shopify will auto-resolve if Province name is standard
+        const country = "India";
+        const countryCode = "IN";
+        const zip = "";
+        const acceptsMarketing = "yes"; // Pre-bookers typically accept updates
+        const totalSpent = "0.00";
+        const totalOrders = "0";
+        const taxExempt = "no";
+
+        // Row construction matching headers array order
+        const row = [
+            `"${firstName.replace(/"/g, '""')}"`,
+            `"${lastName.replace(/"/g, '""')}"`,
+            `"${email}"`,
+            `"${company}"`,
+            `"${address1}"`,
+            `"${address2}"`,
+            city,
+            province,
+            `"${provinceCode}"`,
+            `"${country}"`,
+            `"${countryCode}"`,
+            `"${zip}"`,
+            `"${phone}"`,
+            `"${acceptsMarketing}"`,
+            `"${totalSpent}"`,
+            `"${totalOrders}"`,
+            tags,
+            note,
+            `"${taxExempt}"`
+        ];
+
+        csvContent += row.join(",") + "\n";
     });
 
     const encodedUri = encodeURI(csvContent);
@@ -3879,122 +3951,13 @@ exportCsvBtn.addEventListener('click', () => {
     link.setAttribute("href", encodedUri);
     
     const timestamp = new Date().toISOString().substring(0, 10);
-    link.setAttribute("download", `Ghar_Aangan_Prebookings_${timestamp}.csv`);
+    link.setAttribute("download", `Ghar_Aangan_Shopify_Customers_${timestamp}.csv`);
     
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
 });
 
-/* ==========================================================================
-   10.1 Shopify CSV Exporter Utility
-   ========================================================================== */
-const exportShopifyBtn = document.getElementById('export-shopify-btn');
-if (exportShopifyBtn) {
-    exportShopifyBtn.addEventListener('click', () => {
-        if (bookingsData.length === 0) {
-            alert('No pre-bookings available to export.');
-            return;
-        }
-
-        // Shopify Customer CSV Headers (Official Schema)
-        const headers = [
-            "First Name", "Last Name", "Email", "Company", "Address1", "Address2",
-            "City", "Province", "Province Code", "Country", "Country Code", "Zip",
-            "Phone", "Accepts Marketing", "Total Spent", "Total Orders", "Tags", "Note", "Tax Exempt"
-        ];
-
-        let csvContent = "data:text/csv;charset=utf-8,";
-        csvContent += headers.join(",") + "\n";
-
-        bookingsData.forEach(booking => {
-            // 1. Split Full Name into First Name & Last Name
-            const nameParts = (booking.full_name || '').trim().split(/\s+/);
-            const firstName = nameParts[0] || '';
-            const lastName = nameParts.slice(1).join(' ') || '';
-
-            // 2. Format Mobile Number (+91 prefix for India if 10-digit number)
-            let rawMobile = (booking.mobile_number || '').trim();
-            let phone = '';
-            if (rawMobile) {
-                // Remove non-digit characters just in case
-                rawMobile = rawMobile.replace(/\D/g, '');
-                if (rawMobile.length === 10) {
-                    phone = `+91${rawMobile}`;
-                } else if (rawMobile.length > 10 && rawMobile.startsWith('91')) {
-                    phone = `+${rawMobile}`;
-                } else {
-                    phone = rawMobile; // Fallback
-                }
-            }
-
-            // 3. Format pre-booked item details as Tags
-            const qty = booking.quantity || '';
-            const dateStr = booking.created_at ? new Date(booking.created_at).toISOString().substring(0, 10) : '';
-            
-            // Shopify tags: comma-separated list of tags
-            const tagsList = ["Prebooking", `Qty: ${qty}`];
-            const tags = `"${tagsList.join(', ')}"`;
-
-            // 4. Create Note with date & time info
-            const note = `"Pre-booked ${qty} of Ghar Aangan Pahadi Ghee on ${dateStr} via Coming Soon Landing Page."`;
-
-            // 5. Address / Location
-            const city = `"${(booking.city || '').replace(/"/g, '""')}"`;
-            const province = `"${(booking.state || '').replace(/"/g, '""')}"`;
-            
-            // Empty columns for uncollected fields
-            const email = "";
-            const company = "";
-            const address1 = "";
-            const address2 = "";
-            const provinceCode = ""; // Shopify will auto-resolve if Province name is standard
-            const country = "India";
-            const countryCode = "IN";
-            const zip = "";
-            const acceptsMarketing = "yes"; // Pre-bookers typically accept updates
-            const totalSpent = "0.00";
-            const totalOrders = "0";
-            const taxExempt = "no";
-
-            // Row construction matching headers array order
-            const row = [
-                `"${firstName.replace(/"/g, '""')}"`,
-                `"${lastName.replace(/"/g, '""')}"`,
-                `"${email}"`,
-                `"${company}"`,
-                `"${address1}"`,
-                `"${address2}"`,
-                city,
-                province,
-                `"${provinceCode}"`,
-                `"${country}"`,
-                `"${countryCode}"`,
-                `"${zip}"`,
-                `"${phone}"`,
-                `"${acceptsMarketing}"`,
-                `"${totalSpent}"`,
-                `"${totalOrders}"`,
-                tags,
-                note,
-                `"${taxExempt}"`
-            ];
-
-            csvContent += row.join(",") + "\n";
-        });
-
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        
-        const timestamp = new Date().toISOString().substring(0, 10);
-        link.setAttribute("download", `Ghar_Aangan_Shopify_Customers_${timestamp}.csv`);
-        
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    });
-}
 
 
 // Helper for custom confirmation modal
