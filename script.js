@@ -3037,6 +3037,7 @@ function bindStateCityAutocomplete(stateElement, cityElement, manualGroupElement
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+    initMobileMenu();
     initCountdown();
     initScrollAnimations();
     initFaqAccordion();
@@ -3730,4 +3731,36 @@ function initRecentBookingsNotifications() {
     }
 }
 
+/* ==========================================================================
+   8. Mobile Navigation Hamburger Menu Overlay
+   ========================================================================== */
+function initMobileMenu() {
+    const toggleBtn = document.getElementById('mobile-menu-toggle');
+    const navMenu = document.querySelector('.nav-menu');
+    const navLinks = document.querySelectorAll('.nav-menu .nav-link');
 
+    if (!toggleBtn || !navMenu) return;
+
+    // Toggle menu dropdown and hamburger transformation
+    toggleBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleBtn.classList.toggle('active');
+        navMenu.classList.toggle('active');
+    });
+
+    // Close menu when any anchor link inside it is clicked
+    navLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            toggleBtn.classList.remove('active');
+            navMenu.classList.remove('active');
+        });
+    });
+
+    // Close menu if user clicks anywhere outside of the header/nav menu
+    document.addEventListener('click', (e) => {
+        if (!navMenu.contains(e.target) && !toggleBtn.contains(e.target)) {
+            toggleBtn.classList.remove('active');
+            navMenu.classList.remove('active');
+        }
+    });
+}
