@@ -3250,7 +3250,7 @@ async function fetchBookings() {
 
         if (error) {
             console.error('Error fetching bookings:', error.message);
-            bookingsTableBody.innerHTML = `<tr><td colspan="6" class="table-no-data-row">Error fetching data. Check RLS Policies.</td></tr>`;
+            bookingsTableBody.innerHTML = `<tr><td colspan="7" class="table-no-data-row">Error fetching data. Check RLS Policies.</td></tr>`;
             return;
         }
 
@@ -3258,7 +3258,7 @@ async function fetchBookings() {
         updateDashboardView();
     } catch (err) {
         console.error('Fetch exception:', err);
-        bookingsTableBody.innerHTML = `<tr><td colspan="6" class="table-no-data-row">An unexpected error occurred.</td></tr>`;
+        bookingsTableBody.innerHTML = `<tr><td colspan="7" class="table-no-data-row">An unexpected error occurred.</td></tr>`;
     }
 }
 
@@ -3715,6 +3715,36 @@ function renderCharts() {
 /* ==========================================================================
    8. Registry Table Renderer with Search Filters
    ========================================================================== */
+/* Helper to split quantity into product type and size/weight */
+function parseProductAndQty(quantityStr) {
+    const str = quantityStr || '';
+    if (!str) {
+        return { product: '—', qty: '—' };
+    }
+    
+    // Format matches: Name (Qty)
+    const match = str.match(/(.+?)\s*\(([^)]+)\)$/);
+    if (match) {
+        return {
+            product: match[1].trim(),
+            qty: match[2].trim()
+        };
+    }
+    
+    // Legacy support
+    if (str === '500ml' || str === '1 Litre' || str === '2 Litres' || str === '5 Litres') {
+        return {
+            product: 'A2 Desi Pahadi Ghee',
+            qty: str
+        };
+    }
+    
+    return {
+        product: str,
+        qty: '1 Unit'
+    };
+}
+
 function renderBookingsTable() {
     const filter = tableSearchInput.value.toLowerCase().trim();
     bookingsTableBody.innerHTML = '';
@@ -3728,7 +3758,7 @@ function renderBookingsTable() {
     });
 
     if (filteredData.length === 0) {
-        bookingsTableBody.innerHTML = `<tr><td colspan="6" class="table-no-data-row">No bookings match search criteria.</td></tr>`;
+        bookingsTableBody.innerHTML = `<tr><td colspan="7" class="table-no-data-row">No bookings match search criteria.</td></tr>`;
         return;
     }
 
@@ -3751,13 +3781,17 @@ function renderBookingsTable() {
         const state = booking.state ? escapeHtml(booking.state) : '';
         const locationStr = (city && state) ? `${city}, ${state}` : (city || state || '—');
 
+        // Parse product and quantity
+        const parsed = parseProductAndQty(booking.quantity);
+
         // Cells
         row.innerHTML = `
             <td class="date-cell">${formattedDate}</td>
             <td style="font-weight: 600;">${escapeHtml(booking.full_name)}</td>
             <td>+91 ${escapeHtml(booking.mobile_number)}</td>
             <td>${locationStr}</td>
-            <td><span class="qty-badge">${escapeHtml(booking.quantity)}</span></td>
+            <td><span class="qty-badge" style="background: rgba(30, 63, 32, 0.06); color: var(--primary-green); font-weight: 500;">${escapeHtml(parsed.product)}</span></td>
+            <td><span class="qty-badge" style="background: rgba(212, 175, 55, 0.12); color: var(--gold-dark); font-weight: 500;">${escapeHtml(parsed.qty)}</span></td>
             <td>
                 <div style="display: flex; gap: 8px;">
                     <a href="tel:+91${booking.mobile_number}" class="btn-dial" title="Call Customer">
