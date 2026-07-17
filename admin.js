@@ -3444,6 +3444,16 @@ function formatProductNameForRankings(qtyName) {
     return str;
 }
 
+/* Helper to map old legacy ghee strings to the new dropdown product values when editing */
+function mapLegacyQuantityToNewProduct(qty) {
+    const val = qty || '';
+    if (val === '500ml') return 'A2 Desi Pahadi Ghee (500ml)';
+    if (val === '1 Litre') return 'A2 Desi Pahadi Ghee (1L)';
+    if (val === '2 Litres') return 'A2 Desi Pahadi Ghee (2L)';
+    if (val === '5 Litres') return 'A2 Desi Pahadi Ghee (5L)';
+    return val;
+}
+
 function updateKPIs() {
     // KPI 1: Total count
     const totalCount = bookingsData.length;
@@ -4441,7 +4451,7 @@ window.openEditBookingModal = function(id) {
         defaultOpt.textContent = 'Select State first';
         editCityInput.appendChild(defaultOpt);
     }
-    editQuantitySelect.value = booking.quantity || '';
+    editQuantitySelect.value = mapLegacyQuantityToNewProduct(booking.quantity || '');
 
     // Show modal
     if (editBookingModal) {
