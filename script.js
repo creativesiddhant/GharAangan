@@ -3192,6 +3192,12 @@ function initFormValidation() {
         validateField(quantitySelect, quantitySelect.value !== '', 'quantity-error');
     });
 
+    if (stateInput) {
+        stateInput.addEventListener('change', () => {
+            validateField(stateInput, stateInput.value !== '', 'state-error');
+        });
+    }
+
     if (cityInput) {
         cityInput.addEventListener('change', () => {
             validateField(cityInput, true, 'city-error');
@@ -3227,7 +3233,7 @@ function initFormValidation() {
         const isMobileValid = validateField(mobileInput, /^[6-9]\d{9}$/.test(mobileInput.value), 'mobile-error');
         const isQtyValid = validateField(quantitySelect, quantitySelect.value !== '', 'quantity-error');
         const isCityValid = true; // City is optional
-        const isStateValid = true; // State is optional
+        const isStateValid = validateField(stateInput, stateInput.value !== '', 'state-error');
 
         if (!isNameValid || !isMobileValid || !isQtyValid || !isCityValid || !isStateValid) {
             // Find first error group and focus it

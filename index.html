@@ -627,8 +627,8 @@
                             <div class="input-group">
                                 <label for="state"><i class="fa-solid fa-map-location-dot"></i> State</label>
                                 <div class="custom-select-wrapper">
-                                    <select id="state">
-                                        <option value="" selected>Select State</option>
+                                    <select id="state" required>
+                                        <option value="" disabled selected>Select State</option>
                                         <option value="Andhra Pradesh">Andhra Pradesh</option>
                                         <option value="Arunachal Pradesh">Arunachal Pradesh</option>
                                         <option value="Assam">Assam</option>
@@ -665,6 +665,7 @@
                                         <option value="West Bengal">West Bengal</option>
                                     </select>
                                 </div>
+                                <span class="error-msg" id="state-error">Please select your state</span>
                             </div>
 
                             <!-- City -->
