@@ -3596,7 +3596,7 @@ function initRecentBookingsNotifications() {
                 <i class="fa-solid fa-check"></i>
             </div>
             <div class="booking-toast-content">
-                <strong>${escapeHtml(booking.name)}</strong>${locationPhrase} recently pre-booked <strong>${booking.quantity}</strong> from our Pahadi range.
+                <strong>${escapeHtml(booking.name)}</strong>${locationPhrase} recently pre-booked <strong>${booking.quantity}</strong>.
             </div>
             <button class="booking-toast-close" title="Close Notification">
                 <i class="fa-solid fa-xmark"></i>
