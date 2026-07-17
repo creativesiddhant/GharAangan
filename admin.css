@@ -791,6 +791,18 @@ tr:hover td {
         padding: 20px;
     }
     
+    .chart-card-header {
+        margin-bottom: 16px;
+    }
+    
+    .chart-card-header h3 {
+        font-size: 1.1rem;
+    }
+    
+    .chart-card-header p {
+        font-size: 0.78rem;
+    }
+    
     .chart-container {
         height: 250px;
     }

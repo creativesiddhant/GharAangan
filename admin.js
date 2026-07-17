@@ -3444,6 +3444,17 @@ function formatProductNameForRankings(qtyName) {
     return str;
 }
 
+/* Helper to format compact product names for the horizontal bar chart to prevent mobile label clipping */
+function formatProductNameForChart(qtyName) {
+    let name = formatProductNameForRankings(qtyName);
+    name = name.replace("A2 Desi Pahadi Ghee", "Ghee");
+    name = name.replace("Pahadi Pisyu ", "");
+    name = name.replace("Pahadi ", "");
+    name = name.replace("Original Pahadi ", "");
+    name = name.replace("Original ", "");
+    return name;
+}
+
 /* Helper to map old legacy ghee strings to the new dropdown product values when editing */
 function mapLegacyQuantityToNewProduct(qty) {
     const val = qty || '';
@@ -3583,7 +3594,7 @@ function renderCharts() {
         productCounts[prod] = (productCounts[prod] || 0) + 1;
     });
 
-    const labels = Object.keys(productCounts).map(formatProductNameForRankings);
+    const labels = Object.keys(productCounts).map(formatProductNameForChart);
     const dataValues = Object.values(productCounts);
 
     const baseColors = [
