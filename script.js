@@ -3498,12 +3498,23 @@ function initRecentBookingsNotifications() {
                   .replace(/'/g, "&#039;");
     }
 
-    // Standardize quantity strings to clean short-form (e.g. "2 Litres" instead of "2 Litres (2 x 1L Tins)")
+    // Standardize quantity strings to clean short-form showing product & quantity (e.g. "A2 Desi Pahadi Ghee - 1 Litre" instead of "1 Litre")
     function cleanQuantity(qty) {
-        if (!qty) return "a product";
-        // If it starts with numbers (like old database records), clean it, else keep full product name
-        const match = qty.match(/^(\d+(?:\.\d+)?\s*(?:Litre|Litres|ml|g|kg))/i);
-        return match ? match[1] : qty;
+        const str = qty || '';
+        if (!str) return "a product";
+        
+        // Legacy support
+        if (str === '500ml' || str === '1 Litre' || str === '2 Litres' || str === '5 Litres') {
+            return `A2 Desi Pahadi Ghee - ${str}`;
+        }
+        
+        // Format "Name (Qty)" to "Name - Qty"
+        const match = str.match(/(.+?)\s*\(([^)]+)\)$/);
+        if (match) {
+            return `${match[1].trim()} - ${match[2].trim()}`;
+        }
+        
+        return str;
     }
 
     let currentPoolIndex = 0;
