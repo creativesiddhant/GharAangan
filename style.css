@@ -890,7 +890,7 @@ p {
 }
 
 .faq-answer.show {
-    max-height: 1200px;
+    max-height: 2500px;
     padding: 20px 28px 24px;
     transition: max-height 0.4s cubic-bezier(1, 0, 1, 0), padding 0.3s ease;
 }
