@@ -3464,7 +3464,14 @@ function updateKPIs() {
     const qtyCounts = {};
 
     bookingsData.forEach(booking => {
-        const qty = booking.quantity || '';
+        let qty = booking.quantity || '';
+        
+        // Map legacy ghee package strings to new counterparts
+        if (qty === '500ml') qty = 'A2 Desi Pahadi Ghee (500ml)';
+        else if (qty === '1 Litre') qty = 'A2 Desi Pahadi Ghee (1L)';
+        else if (qty === '2 Litres') qty = 'A2 Desi Pahadi Ghee (2L)';
+        else if (qty === '5 Litres') qty = 'A2 Desi Pahadi Ghee (5L)';
+
         if (qty) {
             qtyCounts[qty] = (qtyCounts[qty] || 0) + 1;
         }
@@ -3531,10 +3538,48 @@ function updateKPIs() {
    7. Chart.js Graphs Monitor
    ========================================================================== */
 function renderCharts() {
-    // 7A. Product demand distribution datasets (dynamic)
+    // 7A. Product demand distribution datasets (collects data for all catalog products including 0 counts)
+    const catalogProducts = [
+        "A2 Desi Pahadi Ghee (500ml)",
+        "A2 Desi Pahadi Ghee (1L)",
+        "A2 Desi Pahadi Ghee (2L)",
+        "A2 Desi Pahadi Ghee (5L)",
+        "Pahadi Pisyu Bhaang Loon (200g)",
+        "Pahadi Pisyu Chatpata Laal Mirch Loon (200g)",
+        "Pahadi Pisyu Mix Seasoning Loon (200g)",
+        "Pahadi Gud (400g)",
+        "Pahadi Saunf Gud (400g)",
+        "Pahadi Dry Fruits Gud (400g)",
+        "Pahadi Dry Fruits Gud (1kg)",
+        "Pahadi Kaju Gud (400g)",
+        "Pahadi Badam Gud (400g)",
+        "Pahadi Kismis Gud (400g)",
+        "Pahadi Seeds Gud (400g)",
+        "Pahadi Rajma (500g)",
+        "Pahadi Black Soyabean (500g)",
+        "Pahadi Gauhat Ki Dal (500g)",
+        "Pahadi Lobia Dal (500g)",
+        "Pahadi Buransh Juice (500ml)",
+        "Pahadi Amla Juice (500ml)",
+        "Pahadi Orange Juice (500ml)",
+        "Original Pahadi Mandua Ka Aata (1kg)",
+        "Original Pahadi Mandua Ka Aata (5kg)"
+    ];
+
     const productCounts = {};
+    catalogProducts.forEach(prod => {
+        productCounts[prod] = 0;
+    });
+
     bookingsData.forEach(booking => {
-        const prod = booking.quantity || 'Unknown';
+        let prod = booking.quantity || 'Unknown';
+        
+        // Map legacy ghee package strings to new counterparts
+        if (prod === '500ml') prod = 'A2 Desi Pahadi Ghee (500ml)';
+        else if (prod === '1 Litre') prod = 'A2 Desi Pahadi Ghee (1L)';
+        else if (prod === '2 Litres') prod = 'A2 Desi Pahadi Ghee (2L)';
+        else if (prod === '5 Litres') prod = 'A2 Desi Pahadi Ghee (5L)';
+
         productCounts[prod] = (productCounts[prod] || 0) + 1;
     });
 
@@ -3579,19 +3624,20 @@ function renderCharts() {
             }]
         },
         options: {
+            indexAxis: 'y', // Set horizontal orientation to display many product labels cleanly
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
                 legend: { display: false }
             },
             scales: {
-                y: {
+                x: {
                     beginAtZero: true,
                     ticks: { stepSize: 1, color: '#5C4B3E' },
                     grid: { color: '#EBE4DA' }
                 },
-                x: {
-                    ticks: { color: '#5C4B3E' },
+                y: {
+                    ticks: { color: '#5C4B3E', font: { size: 9 } },
                     grid: { display: false }
                 }
             }
