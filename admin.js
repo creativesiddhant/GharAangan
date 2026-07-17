@@ -3511,11 +3511,11 @@ function updateKPIs() {
                 itemDiv.style.width = '100%';
                 
                 itemDiv.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.76rem; margin-bottom: 2px; color: var(--text-dark);">
-                        <span style="font-weight: ${index === 0 ? '600' : 'normal'}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 155px;" title="${escapeHtml(formattedName)}">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; font-size: 0.76rem; margin-bottom: 2px; color: var(--text-dark);">
+                        <span style="font-weight: ${index === 0 ? '600' : 'normal'}; line-height: 1.25; padding-right: 5px; flex: 1;" title="${escapeHtml(formattedName)}">
                             ${rankText}. ${escapeHtml(formattedName)}
                         </span>
-                        <span style="font-weight: 600; font-size: 0.72rem; color: ${barColor};">${count}</span>
+                        <span style="font-weight: 600; font-size: 0.72rem; color: ${barColor}; white-space: nowrap;">${count}</span>
                     </div>
                     <div style="background: rgba(30, 63, 32, 0.05); height: 4px; border-radius: 2px; overflow: hidden; width: 100%;">
                         <div style="background: ${barColor}; height: 100%; width: ${percent}%; border-radius: 2px; transition: width 0.4s ease;"></div>
