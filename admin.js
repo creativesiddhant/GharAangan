@@ -3487,21 +3487,42 @@ function updateKPIs() {
 
     // KPI 3: Popular Products Rankings (Top 6)
     const rankedProducts = Object.entries(qtyCounts)
-        .sort((a, b) => b[1] - a[1]); // sort descending by count
+        .sort((a, b) => b[1] - a[1]) // sort descending by count
+        .slice(0, 6); // take top 6
 
-    for (let i = 1; i <= 6; i++) {
-        const rankEl = document.getElementById(`rank-${i}`);
-        if (rankEl) {
-            if (rankedProducts[i - 1]) {
-                const [productName, count] = rankedProducts[i - 1];
-                rankEl.textContent = `${formatProductNameForRankings(productName)} (${count})`;
-                rankEl.style.fontWeight = i === 1 ? '600' : 'normal';
-                if (i === 1) rankEl.style.color = 'var(--primary-green)';
-                else rankEl.style.color = '';
-            } else {
-                rankEl.textContent = 'None';
-                rankEl.style.color = '';
-            }
+    const rankingsContainer = document.getElementById('kpi-popular-products-list');
+    if (rankingsContainer) {
+        rankingsContainer.innerHTML = '';
+        
+        if (rankedProducts.length === 0) {
+            rankingsContainer.innerHTML = '<div style="font-size: 0.82rem; color: var(--text-muted); font-style: italic; margin-top: 10px;">No bookings recorded yet.</div>';
+        } else {
+            const maxVal = rankedProducts[0][1];
+            
+            rankedProducts.forEach(([prodName, count], index) => {
+                const formattedName = formatProductNameForRankings(prodName);
+                const percent = maxVal > 0 ? (count / maxVal) * 100 : 0;
+                
+                const rankText = index === 0 ? '1st' : index === 1 ? '2nd' : index === 2 ? '3rd' : `${index + 1}th`;
+                const barColor = index === 0 ? 'var(--primary-green)' : index === 1 ? 'var(--gold-dark)' : '#5C4B3E';
+                
+                const itemDiv = document.createElement('div');
+                itemDiv.style.marginBottom = '2px';
+                itemDiv.style.width = '100%';
+                
+                itemDiv.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.76rem; margin-bottom: 2px; color: var(--text-dark);">
+                        <span style="font-weight: ${index === 0 ? '600' : 'normal'}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 155px;" title="${escapeHtml(formattedName)}">
+                            ${rankText}. ${escapeHtml(formattedName)}
+                        </span>
+                        <span style="font-weight: 600; font-size: 0.72rem; color: ${barColor};">${count}</span>
+                    </div>
+                    <div style="background: rgba(30, 63, 32, 0.05); height: 4px; border-radius: 2px; overflow: hidden; width: 100%;">
+                        <div style="background: ${barColor}; height: 100%; width: ${percent}%; border-radius: 2px; transition: width 0.4s ease;"></div>
+                    </div>
+                `;
+                rankingsContainer.appendChild(itemDiv);
+            });
         }
     }
 }
