@@ -3427,6 +3427,23 @@ function updateDashboardView() {
 /* ==========================================================================
    6. KPI Calculators
    ========================================================================== */
+/* Helper to format product names and weights nicely for rankings and charts */
+function formatProductNameForRankings(qtyName) {
+    const str = qtyName || '';
+    // If it's a legacy ghee string, expand it to include the product name
+    if (str === '500ml' || str === '1 Litre' || str === '2 Litres' || str === '5 Litres') {
+        return `A2 Desi Pahadi Ghee - ${str}`;
+    }
+    
+    // Format "Name (Qty)" to "Name - Qty"
+    const match = str.match(/(.+?)\s*\(([^)]+)\)$/);
+    if (match) {
+        return `${match[1].trim()} - ${match[2].trim()}`;
+    }
+    
+    return str;
+}
+
 function updateKPIs() {
     // KPI 1: Total count
     const totalCount = bookingsData.length;
@@ -3467,7 +3484,7 @@ function updateKPIs() {
         if (rankEl) {
             if (rankedProducts[i - 1]) {
                 const [productName, count] = rankedProducts[i - 1];
-                rankEl.textContent = `${productName} (${count})`;
+                rankEl.textContent = `${formatProductNameForRankings(productName)} (${count})`;
                 rankEl.style.fontWeight = i === 1 ? '600' : 'normal';
                 if (i === 1) rankEl.style.color = 'var(--primary-green)';
                 else rankEl.style.color = '';
@@ -3490,7 +3507,7 @@ function renderCharts() {
         productCounts[prod] = (productCounts[prod] || 0) + 1;
     });
 
-    const labels = Object.keys(productCounts);
+    const labels = Object.keys(productCounts).map(formatProductNameForRankings);
     const dataValues = Object.values(productCounts);
 
     const baseColors = [
