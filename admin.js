@@ -3037,7 +3037,7 @@ const realtimeAlert = document.getElementById('realtime-alert');
 
 const kpiTotalBookings = document.getElementById('kpi-total-bookings');
 const kpiTotalLiters = document.getElementById('kpi-total-liters');
-const kpiPopularPkg = document.getElementById('kpi-popular-pkg');
+const kpiPopularPkg = document.getElementById('kpi-popular-pkg') || null;
 const kpiTotalVisitors = document.getElementById('kpi-total-visitors');
 const visitorsTableBody = document.getElementById('visitors-table-body');
 const clearVisitsBtn = document.getElementById('clear-visits-btn');
@@ -3432,61 +3432,87 @@ function updateKPIs() {
     const totalCount = bookingsData.length;
     kpiTotalBookings.textContent = totalCount;
 
-    // KPI 2: Total Liters
+    // KPI 2: Total Liters (Ghee Churned Only)
     let totalLiters = 0;
     const qtyCounts = {};
 
     bookingsData.forEach(booking => {
-        const qty = booking.quantity;
-        qtyCounts[qty] = (qtyCounts[qty] || 0) + 1;
+        const qty = booking.quantity || '';
+        if (qty) {
+            qtyCounts[qty] = (qtyCounts[qty] || 0) + 1;
+        }
 
-        if (qty === '500ml') {
-            totalLiters += 0.5;
-        } else if (qty === '1 Litre') {
-            totalLiters += 1.0;
-        } else if (qty === '2 Litres') {
-            totalLiters += 2.0;
-        } else if (qty === '5 Litres') {
-            totalLiters += 5.0;
+        // Sum Liters Churned only for Ghee
+        if (qty.includes('Ghee') || qty === '500ml' || qty === '1 Litre' || qty === '2 Litres' || qty === '5 Litres') {
+            if (qty.includes('500ml') || qty === '500ml') {
+                totalLiters += 0.5;
+            } else if (qty.includes('1L') || qty === '1 Litre') {
+                totalLiters += 1.0;
+            } else if (qty.includes('2L') || qty === '2 Litres') {
+                totalLiters += 2.0;
+            } else if (qty.includes('5L') || qty === '5 Litres') {
+                totalLiters += 5.0;
+            }
         }
     });
 
     kpiTotalLiters.textContent = `${totalLiters} L`;
 
-    // KPI 3: Popular package
-    let popularPkg = 'None';
-    let maxCount = 0;
+    // KPI 3: Popular Products Rankings (Top 6)
+    const rankedProducts = Object.entries(qtyCounts)
+        .sort((a, b) => b[1] - a[1]); // sort descending by count
 
-    for (const [pkg, count] of Object.entries(qtyCounts)) {
-        if (count > maxCount) {
-            maxCount = count;
-            popularPkg = pkg;
+    for (let i = 1; i <= 6; i++) {
+        const rankEl = document.getElementById(`rank-${i}`);
+        if (rankEl) {
+            if (rankedProducts[i - 1]) {
+                const [productName, count] = rankedProducts[i - 1];
+                rankEl.textContent = `${productName} (${count})`;
+                rankEl.style.fontWeight = i === 1 ? '600' : 'normal';
+                if (i === 1) rankEl.style.color = 'var(--primary-green)';
+                else rankEl.style.color = '';
+            } else {
+                rankEl.textContent = 'None';
+                rankEl.style.color = '';
+            }
         }
     }
-    
-    kpiPopularPkg.textContent = popularPkg;
 }
 
 /* ==========================================================================
    7. Chart.js Graphs Monitor
    ========================================================================== */
 function renderCharts() {
-    // 7A. Package demand distribution datasets
-    const qtyCounts = {
-        '500ml': 0,
-        '1 Litre': 0,
-        '2 Litres': 0,
-        '5 Litres': 0
-    };
-
+    // 7A. Product demand distribution datasets (dynamic)
+    const productCounts = {};
     bookingsData.forEach(booking => {
-        if (qtyCounts[booking.quantity] !== undefined) {
-            qtyCounts[booking.quantity]++;
-        }
+        const prod = booking.quantity || 'Unknown';
+        productCounts[prod] = (productCounts[prod] || 0) + 1;
     });
 
-    const labels = Object.keys(qtyCounts);
-    const dataValues = Object.values(qtyCounts);
+    const labels = Object.keys(productCounts);
+    const dataValues = Object.values(productCounts);
+
+    const baseColors = [
+        'rgba(30, 63, 32, 0.7)',    // Forest Green
+        'rgba(212, 175, 55, 0.7)',  // Gold
+        'rgba(92, 75, 62, 0.7)',    // Earthy Brown
+        'rgba(46, 204, 113, 0.7)',  // Soft Green
+        'rgba(230, 126, 34, 0.7)',  // Orange
+        'rgba(155, 89, 182, 0.7)',  // Purple
+        'rgba(52, 152, 219, 0.7)'   // Blue
+    ];
+    const baseBorders = [
+        '#1E3F20',
+        '#D4AF37',
+        '#5C4B3E',
+        '#2ECC71',
+        '#E67E22',
+        '#9B59B6',
+        '#3498DB'
+    ];
+    const backgroundColors = labels.map((_, idx) => baseColors[idx % baseColors.length]);
+    const borderColors = labels.map((_, idx) => baseBorders[idx % baseBorders.length]);
 
     // Destroy existing chart to prevent canvas reuse errors
     if (quantityChart) quantityChart.destroy();
@@ -3497,20 +3523,10 @@ function renderCharts() {
         data: {
             labels: labels,
             datasets: [{
-                label: 'Jars / Tins Pre-booked',
+                label: 'Products Pre-booked',
                 data: dataValues,
-                backgroundColor: [
-                    'rgba(212, 175, 55, 0.7)',  // Gold
-                    'rgba(30, 63, 32, 0.7)',    // Forest Green
-                    'rgba(92, 75, 62, 0.7)',    // Earthy Brown
-                    'rgba(46, 204, 113, 0.7)'   // Soft Green
-                ],
-                borderColor: [
-                    '#D4AF37',
-                    '#1E3F20',
-                    '#5C4B3E',
-                    '#2ECC71'
-                ],
+                backgroundColor: backgroundColors,
+                borderColor: borderColors,
                 borderWidth: 1.5
             }]
         },
@@ -3534,7 +3550,7 @@ function renderCharts() {
         }
     });
 
-    // 7B. Geographic demand distribution dataset (Litres and Bookings count)
+    // 7B. Geographic demand distribution dataset (Liters/Kg and Bookings count)
     const locationCounts = {};
     bookingsData.forEach(booking => {
         const city = booking.city ? booking.city.trim() : '';
@@ -3550,14 +3566,20 @@ function renderCharts() {
         }
         
         let qtyLitres = 0;
-        if (booking.quantity) {
-            if (booking.quantity.includes('500ml')) qtyLitres = 0.5;
-            else if (booking.quantity.includes('1 Litre')) qtyLitres = 1;
-            else if (booking.quantity.includes('2 Litres')) qtyLitres = 2;
-            else if (booking.quantity.includes('5 Litres')) qtyLitres = 5;
-            else {
-                const match = booking.quantity.match(/^(\d+(?:\.\d+)?)/);
-                qtyLitres = match ? parseFloat(match[1]) : 1;
+        const qtyStr = booking.quantity || '';
+        if (qtyStr) {
+            if (qtyStr.includes('Ghee') || qtyStr === '500ml' || qtyStr === '1 Litre' || qtyStr === '2 Litres' || qtyStr === '5 Litres') {
+                if (qtyStr.includes('500ml') || qtyStr === '500ml') qtyLitres = 0.5;
+                else if (qtyStr.includes('1L') || qtyStr === '1 Litre') qtyLitres = 1;
+                else if (qtyStr.includes('2L') || qtyStr === '2 Litres') qtyLitres = 2;
+                else if (qtyStr.includes('5L') || qtyStr === '5 Litres') qtyLitres = 5;
+            } else {
+                if (qtyStr.includes('5kg')) qtyLitres = 5;
+                else if (qtyStr.includes('1kg') || qtyStr.includes('1 kg')) qtyLitres = 1;
+                else if (qtyStr.includes('500g') || qtyStr.includes('500 gms')) qtyLitres = 0.5;
+                else if (qtyStr.includes('400g') || qtyStr.includes('400 gms')) qtyLitres = 0.4;
+                else if (qtyStr.includes('200g') || qtyStr.includes('200 gms')) qtyLitres = 0.2;
+                else qtyLitres = 1;
             }
         } else {
             qtyLitres = 1;
