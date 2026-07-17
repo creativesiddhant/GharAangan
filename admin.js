@@ -4053,7 +4053,8 @@ exportCsvBtn.addEventListener('click', () => {
         }
 
         // 3. Format pre-booked item details as Tags
-        const qty = booking.quantity || '';
+        const rawQty = booking.quantity || '';
+        const qty = formatProductNameForRankings(rawQty); // Uses formatter to include product name for legacy Ghee records
         const dateStr = booking.created_at ? new Date(booking.created_at).toISOString().substring(0, 10) : '';
         
         // Shopify tags: comma-separated list of tags
@@ -4061,7 +4062,7 @@ exportCsvBtn.addEventListener('click', () => {
         const tags = `"${tagsList.join(', ')}"`;
 
         // 4. Create Note with date & time info
-        const note = `"Pre-booked ${qty} of Ghar Aangan on ${dateStr} via Coming Soon Landing Page."`;
+        const note = `"Pre-booked ${qty} on ${dateStr} via Coming Soon Landing Page."`;
 
         // 5. Address / Location
         const city = `"${(booking.city || '').replace(/"/g, '""')}"`;
