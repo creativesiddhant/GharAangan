@@ -156,7 +156,7 @@
                     <div class="chart-card">
                         <div class="chart-card-header">
                             <h3>Geographic Demand Distribution</h3>
-                            <p>Top cities pre-ordering our ghee (Litres)</p>
+                            <p>Top cities pre-ordering our products</p>
                         </div>
                         <div class="chart-container">
                             <canvas id="locationChart"></canvas>
@@ -339,17 +339,49 @@
                 
 
                 <div class="input-group" id="manual-quantity-group">
-                    <label for="manual-quantity"><i class="fa-solid fa-bucket"></i> Ghee Quantity</label>
+                    <label for="manual-quantity"><i class="fa-solid fa-bag-shopping"></i> Selected Product</label>
                     <div class="custom-select-wrapper">
                         <select id="manual-quantity" required>
-                            <option value="" disabled selected>Select quantity</option>
-                            <option value="500ml">500ml Glass Jar</option>
-                            <option value="1 Litre">1 Litre Premium Tin</option>
-                            <option value="2 Litres">2 Litres (2 x 1L Tins)</option>
-                            <option value="5 Litres">5 Litres (Family Pack)</option>
+                            <option value="" disabled selected>Select product</option>
+                            <optgroup label="A2 Desi Pahadi Ghee (Main Item)">
+                                <option value="A2 Desi Pahadi Ghee (500ml)">A2 Desi Pahadi Ghee - 500ml Glass Jar</option>
+                                <option value="A2 Desi Pahadi Ghee (1L)">A2 Desi Pahadi Ghee - 1 Litre Premium Tin</option>
+                                <option value="A2 Desi Pahadi Ghee (2L)">A2 Desi Pahadi Ghee - 2 Litres (2 x 1L Tins)</option>
+                                <option value="A2 Desi Pahadi Ghee (5L)">A2 Desi Pahadi Ghee - 5 Litres (Family Pack)</option>
+                            </optgroup>
+                            <optgroup label="Pahadi Pisyu Loon (Traditional Salts)">
+                                <option value="Pahadi Pisyu Bhaang Loon (200g)">Pahadi Pisyu Bhaang Loon (Salt) - 200g</option>
+                                <option value="Pahadi Pisyu Chatpata Laal Mirch Loon (200g)">Pahadi Pisyu Chatpata Laal Mirch Loon (Salt) - 200g</option>
+                                <option value="Pahadi Pisyu Mix Seasoning Loon (200g)">Pahadi Pisyu Mix Seasoning Loon (Salt) - 200g</option>
+                            </optgroup>
+                            <optgroup label="Pahadi Gud (Jaggery)">
+                                <option value="Pahadi Gud (400g)">Pahadi Gud (Jaggery) - 400g</option>
+                                <option value="Pahadi Saunf Gud (400g)">Pahadi Saunf Gud - 400g</option>
+                                <option value="Pahadi Dry Fruits Gud (400g)">Pahadi Dry Fruits Gud (Mixed Dry Fruits) - 400g</option>
+                                <option value="Pahadi Dry Fruits Gud (1kg)">Pahadi Dry Fruits Gud (Mixed Dry Fruits) - 1kg</option>
+                                <option value="Pahadi Kaju Gud (400g)">Pahadi Kaju Gud - 400g</option>
+                                <option value="Pahadi Badam Gud (400g)">Pahadi Badam Gud - 400g</option>
+                                <option value="Pahadi Kismis Gud (400g)">Pahadi Kismis Gud - 400g</option>
+                                <option value="Pahadi Seeds Gud (400g)">Pahadi Seeds Gud - 400g</option>
+                            </optgroup>
+                            <optgroup label="Pahadi Heritage Dals & Pulses">
+                                <option value="Pahadi Rajma (500g)">Pahadi Rajma - 500g</option>
+                                <option value="Pahadi Black Soyabean (500g)">Pahadi Black Soyabean (Bhatt Ki Dal) - 500g</option>
+                                <option value="Pahadi Gauhat Ki Dal (500g)">Pahadi Gauhat Ki Dal - 500g</option>
+                                <option value="Pahadi Lobia Dal (500g)">Pahadi Lobia Dal - 500g</option>
+                            </optgroup>
+                            <optgroup label="Pahadi Fruit Squashes & Juices">
+                                <option value="Pahadi Buransh Juice (500ml)">Pahadi Buransh Juice (Squash) - 500ml</option>
+                                <option value="Pahadi Amla Juice (500ml)">Pahadi Amla Juice (Squash) - 500ml</option>
+                                <option value="Pahadi Orange Juice (500ml)">Pahadi Orange Juice (Squash) - 500ml</option>
+                            </optgroup>
+                            <optgroup label="Original Pahadi Mandua Ka Aata (Flour)">
+                                <option value="Original Pahadi Mandua Ka Aata (1kg)">Original Pahadi Mandua Ka Aata - 1kg</option>
+                                <option value="Original Pahadi Mandua Ka Aata (5kg)">Original Pahadi Mandua Ka Aata - 5kg</option>
+                            </optgroup>
                         </select>
                     </div>
-                    <span class="error-msg" id="manual-quantity-error">Please select a quantity</span>
+                    <span class="error-msg" id="manual-quantity-error">Please select a product</span>
                 </div>
                 
                 <div class="modal-actions" style="margin-top: 30px; display: flex; gap: 12px; justify-content: flex-end;">
@@ -441,17 +473,49 @@
                 
 
                 <div class="input-group" id="edit-quantity-group">
-                    <label for="edit-quantity"><i class="fa-solid fa-bucket"></i> Ghee Quantity</label>
+                    <label for="edit-quantity"><i class="fa-solid fa-bag-shopping"></i> Selected Product</label>
                     <div class="custom-select-wrapper">
                         <select id="edit-quantity" required>
-                            <option value="" disabled selected>Select quantity</option>
-                            <option value="500ml">500ml Glass Jar</option>
-                            <option value="1 Litre">1 Litre Premium Tin</option>
-                            <option value="2 Litres">2 Litres (2 x 1L Tins)</option>
-                            <option value="5 Litres">5 Litres (Family Pack)</option>
+                            <option value="" disabled selected>Select product</option>
+                            <optgroup label="A2 Desi Pahadi Ghee (Main Item)">
+                                <option value="A2 Desi Pahadi Ghee (500ml)">A2 Desi Pahadi Ghee - 500ml Glass Jar</option>
+                                <option value="A2 Desi Pahadi Ghee (1L)">A2 Desi Pahadi Ghee - 1 Litre Premium Tin</option>
+                                <option value="A2 Desi Pahadi Ghee (2L)">A2 Desi Pahadi Ghee - 2 Litres (2 x 1L Tins)</option>
+                                <option value="A2 Desi Pahadi Ghee (5L)">A2 Desi Pahadi Ghee - 5 Litres (Family Pack)</option>
+                            </optgroup>
+                            <optgroup label="Pahadi Pisyu Loon (Traditional Salts)">
+                                <option value="Pahadi Pisyu Bhaang Loon (200g)">Pahadi Pisyu Bhaang Loon (Salt) - 200g</option>
+                                <option value="Pahadi Pisyu Chatpata Laal Mirch Loon (200g)">Pahadi Pisyu Chatpata Laal Mirch Loon (Salt) - 200g</option>
+                                <option value="Pahadi Pisyu Mix Seasoning Loon (200g)">Pahadi Pisyu Mix Seasoning Loon (Salt) - 200g</option>
+                            </optgroup>
+                            <optgroup label="Pahadi Gud (Jaggery)">
+                                <option value="Pahadi Gud (400g)">Pahadi Gud (Jaggery) - 400g</option>
+                                <option value="Pahadi Saunf Gud (400g)">Pahadi Saunf Gud - 400g</option>
+                                <option value="Pahadi Dry Fruits Gud (400g)">Pahadi Dry Fruits Gud (Mixed Dry Fruits) - 400g</option>
+                                <option value="Pahadi Dry Fruits Gud (1kg)">Pahadi Dry Fruits Gud (Mixed Dry Fruits) - 1kg</option>
+                                <option value="Pahadi Kaju Gud (400g)">Pahadi Kaju Gud - 400g</option>
+                                <option value="Pahadi Badam Gud (400g)">Pahadi Badam Gud - 400g</option>
+                                <option value="Pahadi Kismis Gud (400g)">Pahadi Kismis Gud - 400g</option>
+                                <option value="Pahadi Seeds Gud (400g)">Pahadi Seeds Gud - 400g</option>
+                            </optgroup>
+                            <optgroup label="Pahadi Heritage Dals & Pulses">
+                                <option value="Pahadi Rajma (500g)">Pahadi Rajma - 500g</option>
+                                <option value="Pahadi Black Soyabean (500g)">Pahadi Black Soyabean (Bhatt Ki Dal) - 500g</option>
+                                <option value="Pahadi Gauhat Ki Dal (500g)">Pahadi Gauhat Ki Dal - 500g</option>
+                                <option value="Pahadi Lobia Dal (500g)">Pahadi Lobia Dal - 500g</option>
+                            </optgroup>
+                            <optgroup label="Pahadi Fruit Squashes & Juices">
+                                <option value="Pahadi Buransh Juice (500ml)">Pahadi Buransh Juice (Squash) - 500ml</option>
+                                <option value="Pahadi Amla Juice (500ml)">Pahadi Amla Juice (Squash) - 500ml</option>
+                                <option value="Pahadi Orange Juice (500ml)">Pahadi Orange Juice (Squash) - 500ml</option>
+                            </optgroup>
+                            <optgroup label="Original Pahadi Mandua Ka Aata (Flour)">
+                                <option value="Original Pahadi Mandua Ka Aata (1kg)">Original Pahadi Mandua Ka Aata - 1kg</option>
+                                <option value="Original Pahadi Mandua Ka Aata (5kg)">Original Pahadi Mandua Ka Aata - 5kg</option>
+                            </optgroup>
                         </select>
                     </div>
-                    <span class="error-msg" id="edit-quantity-error">Please select a quantity</span>
+                    <span class="error-msg" id="edit-quantity-error">Please select a product</span>
                 </div>
                 
                 <div class="modal-actions" style="margin-top: 30px; display: flex; gap: 12px; justify-content: flex-end;">

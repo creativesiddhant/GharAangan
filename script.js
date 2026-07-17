@@ -3500,7 +3500,8 @@ function initRecentBookingsNotifications() {
 
     // Standardize quantity strings to clean short-form (e.g. "2 Litres" instead of "2 Litres (2 x 1L Tins)")
     function cleanQuantity(qty) {
-        if (!qty) return "1 Litre";
+        if (!qty) return "a product";
+        // If it starts with numbers (like old database records), clean it, else keep full product name
         const match = qty.match(/^(\d+(?:\.\d+)?\s*(?:Litre|Litres|ml|g|kg))/i);
         return match ? match[1] : qty;
     }
@@ -3584,7 +3585,7 @@ function initRecentBookingsNotifications() {
                 <i class="fa-solid fa-check"></i>
             </div>
             <div class="booking-toast-content">
-                <strong>${escapeHtml(booking.name)}</strong>${locationPhrase} recently pre-booked <strong>${booking.quantity}</strong> of our ghee.
+                <strong>${escapeHtml(booking.name)}</strong>${locationPhrase} recently pre-booked <strong>${booking.quantity}</strong> from our Pahadi range.
             </div>
             <button class="booking-toast-close" title="Close Notification">
                 <i class="fa-solid fa-xmark"></i>
