@@ -1470,20 +1470,22 @@ p {
     right: 15px;
     background: none;
     border: none;
-    color: var(--white);
+    color: #ff4d4d; /* Bright premium red for high visibility */
     font-size: 2.2rem;
-    font-weight: 300;
+    font-weight: 700; /* Bold */
     cursor: pointer;
     line-height: 1;
     z-index: 1010;
     transition: var(--transition-smooth);
-    opacity: 0.7;
+    opacity: 0.9; /* Highly visible by default */
     padding: 5px;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4); /* Contrast shadow */
 }
 
 .popup-close-btn:hover {
-    color: var(--gold);
+    color: #ff1a1a; /* Brighter red on hover */
     opacity: 1;
+    transform: scale(1.1); /* Subtle premium hover animation */
 }
 
 /* Custom styling for scrollbar in popup */
