@@ -3832,10 +3832,10 @@ function initPopupForm() {
         return;
     }
 
-    // 2. Set a 3 seconds timer
-    console.log('[PopupForm] Setting timer for 3 seconds...');
+    // 2. Set a 5 seconds timer
+    console.log('[PopupForm] Setting timer for 5 seconds...');
     setTimeout(() => {
-        console.log('[PopupForm] Timer fired after 3 seconds.');
+        console.log('[PopupForm] Timer fired after 5 seconds.');
         
         // Double-check URL hash at timer execution time
         if (window.location.hash === '#prebook') {
@@ -3946,5 +3946,5 @@ function initPopupForm() {
         // Initialize state/city binding and validation for the popup form
         setupFormValidation(form);
 
-    }, 3000);
+    }, 5000);
 }
