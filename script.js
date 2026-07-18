@@ -3046,6 +3046,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initMobilePrebookScroll();
     logVisit();
     initRecentBookingsNotifications();
+    initPopupForm();
 });
 
 /* ==========================================================================
@@ -3154,16 +3155,32 @@ function initFaqAccordion() {
    ========================================================================== */
 function initFormValidation() {
     const form = document.getElementById('prebook-form');
-    const nameInput = document.getElementById('full-name');
-    const mobileInput = document.getElementById('mobile-number');
-    const quantitySelect = document.getElementById('ghee-quantity');
-    const cityInput = document.getElementById('city');
-    const stateInput = document.getElementById('state');
-    const cityManualInput = document.getElementById('city-manual');
-    const cityManualGroup = document.getElementById('city-manual-group');
-    const submitBtn = document.getElementById('submit-btn');
-    const btnText = submitBtn.querySelector('.btn-text');
-    const btnSpinner = submitBtn.querySelector('.btn-spinner');
+    if (form) {
+        setupFormValidation(form);
+    }
+}
+
+function setupFormValidation(form) {
+    console.log('[setupFormValidation] Initializing validation for form:', form.id);
+    const nameInput = form.querySelector('input[type="text"][id$="full-name"]');
+    const mobileInput = form.querySelector('input[type="tel"][id$="mobile-number"]');
+    const quantitySelect = form.querySelector('select[id$="ghee-quantity"]');
+    const stateInput = form.querySelector('select[id$="state"]');
+    const cityInput = form.querySelector('select[id$="city"]');
+    const cityManualInput = form.querySelector('input[id$="city-manual"]');
+    const cityManualGroup = form.querySelector('[id$="city-manual-group"]');
+    
+    console.log('[setupFormValidation] Found input elements:', {
+        nameInput: !!nameInput,
+        mobileInput: !!mobileInput,
+        quantitySelect: !!quantitySelect,
+        stateInput: !!stateInput,
+        cityInput: !!cityInput
+    });
+
+    const submitBtn = form.querySelector('button[type="submit"]');
+    const btnText = submitBtn ? submitBtn.querySelector('.btn-text') : null;
+    const btnSpinner = submitBtn ? submitBtn.querySelector('.btn-spinner') : null;
 
     const modal = document.getElementById('success-modal');
     const modalSuccessMsg = document.getElementById('modal-success-msg');
@@ -3171,51 +3188,50 @@ function initFormValidation() {
     const savedQuantityEl = document.getElementById('saved-quantity');
     const closeModalBtn = document.getElementById('close-modal-btn');
 
-    if (!form) return;
+    if (!form || !nameInput || !mobileInput || !quantitySelect || !stateInput) {
+        console.warn('[setupFormValidation] Returning early because required inputs are missing!');
+        return;
+    }
 
     // Initialize State & City dynamic dropdown binding
-    bindStateCityAutocomplete(stateInput, cityInput);
+    bindStateCityAutocomplete(stateInput, cityInput, cityManualGroup, cityManualInput);
 
     // Direct input check helpers
     nameInput.addEventListener('input', () => {
-        validateField(nameInput, nameInput.value.trim().length > 1, 'name-error');
+        validateField(nameInput, nameInput.value.trim().length > 1, form.querySelector('.error-msg[id$="name-error"]'));
     });
 
     mobileInput.addEventListener('input', () => {
         // Filter out non-digits immediately
         mobileInput.value = mobileInput.value.replace(/\D/g, '');
         const isValidMobile = /^[6-9]\d{9}$/.test(mobileInput.value);
-        validateField(mobileInput, isValidMobile, 'mobile-error');
+        validateField(mobileInput, isValidMobile, form.querySelector('.error-msg[id$="mobile-error"]'));
     });
 
     quantitySelect.addEventListener('change', () => {
-        validateField(quantitySelect, quantitySelect.value !== '', 'quantity-error');
+        validateField(quantitySelect, quantitySelect.value !== '', form.querySelector('.error-msg[id$="quantity-error"]'));
     });
 
     if (stateInput) {
         stateInput.addEventListener('change', () => {
-            validateField(stateInput, stateInput.value !== '', 'state-error');
+            validateField(stateInput, stateInput.value !== '', form.querySelector('.error-msg[id$="state-error"]'));
         });
     }
 
     if (cityInput) {
         cityInput.addEventListener('change', () => {
-            validateField(cityInput, true, 'city-error');
+            validateField(cityInput, true, form.querySelector('.error-msg[id$="city-error"]'));
         });
     }
 
     if (cityManualInput) {
         cityManualInput.addEventListener('input', () => {
-            validateField(cityManualInput, true, 'city-manual-error');
+            validateField(cityManualInput, true, form.querySelector('.error-msg[id$="city-manual-error"]'));
         });
     }
 
-
-
-    function validateField(inputElement, condition, errorId) {
+    function validateField(inputElement, condition) {
         const group = inputElement.closest('.input-group');
-        const errorSpan = document.getElementById(errorId);
-        
         if (condition) {
             group.classList.remove('error');
             return true;
@@ -3229,11 +3245,11 @@ function initFormValidation() {
         e.preventDefault();
 
         // Perform final check
-        const isNameValid = validateField(nameInput, nameInput.value.trim().length > 1, 'name-error');
-        const isMobileValid = validateField(mobileInput, /^[6-9]\d{9}$/.test(mobileInput.value), 'mobile-error');
-        const isQtyValid = validateField(quantitySelect, quantitySelect.value !== '', 'quantity-error');
+        const isNameValid = validateField(nameInput, nameInput.value.trim().length > 1);
+        const isMobileValid = validateField(mobileInput, /^[6-9]\d{9}$/.test(mobileInput.value));
+        const isQtyValid = validateField(quantitySelect, quantitySelect.value !== '');
         const isCityValid = true; // City is optional
-        const isStateValid = validateField(stateInput, stateInput.value !== '', 'state-error');
+        const isStateValid = validateField(stateInput, stateInput.value !== '');
 
         if (!isNameValid || !isMobileValid || !isQtyValid || !isCityValid || !isStateValid) {
             // Find first error group and focus it
@@ -3257,8 +3273,10 @@ function initFormValidation() {
 
         if (isDuplicate) {
             const mobileGroup = mobileInput.closest('.input-group');
-            const mobileError = document.getElementById('mobile-error');
-            mobileError.textContent = "This mobile number has already pre-booked. We'll contact you soon!";
+            const mobileError = form.querySelector('.error-msg[id$="mobile-error"]');
+            if (mobileError) {
+                mobileError.textContent = "This mobile number has already pre-booked. We'll contact you soon!";
+            }
             mobileGroup.classList.add('error');
             mobileInput.focus();
             return;
@@ -3289,7 +3307,7 @@ function initFormValidation() {
             form.reset();
             
             // Remove error styles just in case
-            document.querySelectorAll('.input-group').forEach(group => group.classList.remove('error'));
+            form.querySelectorAll('.input-group').forEach(group => group.classList.remove('error'));
 
             // Show Success Modal
             modal.classList.add('active');
@@ -3298,6 +3316,13 @@ function initFormValidation() {
             submitBtn.disabled = false;
             btnText.classList.remove('hidden');
             btnSpinner.classList.add('hidden');
+
+            // Close popup modal if form was inside popup
+            const popupModal = document.getElementById('popup-prebook-modal');
+            if (popupModal) {
+                popupModal.classList.remove('active');
+                setTimeout(() => popupModal.remove(), 400);
+            }
         }
 
         if (supabaseClient) {
@@ -3336,15 +3361,19 @@ function initFormValidation() {
     });
 
     // Close Modal on Button click or backdrop click
-    closeModalBtn.addEventListener('click', () => {
-        modal.classList.remove('active');
-    });
-
-    modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', () => {
             modal.classList.remove('active');
-        }
-    });
+        });
+    }
+
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('active');
+            }
+        });
+    }
 }
 
 /* ==========================================================================
@@ -3781,4 +3810,141 @@ function initMobileMenu() {
             navMenu.classList.remove('active');
         }
     });
+}
+
+/* ==========================================================================
+   9. Timed Popup Pre-booking Form (3-Second Delay)
+   ========================================================================== */
+function initPopupForm() {
+    console.log('[PopupForm] initPopupForm function called.');
+    
+    // Check if the URL has the hash '#prebook'
+    if (window.location.hash === '#prebook') {
+        console.log('[PopupForm] URL contains hash #prebook, skipping popup.');
+        return;
+    }
+    
+    // 1. Check if user has already pre-booked
+    const hasPrebooked = localStorage.getItem('gharaangan_prebookings');
+    console.log('[PopupForm] hasPrebooked check:', hasPrebooked);
+    if (hasPrebooked) {
+        console.log('[PopupForm] User already pre-booked in past, skipping popup.');
+        return;
+    }
+
+    // 2. Set a 3 seconds timer
+    console.log('[PopupForm] Setting timer for 3 seconds...');
+    setTimeout(() => {
+        console.log('[PopupForm] Timer fired after 3 seconds.');
+        
+        // Double-check URL hash at timer execution time
+        if (window.location.hash === '#prebook') {
+            console.log('[PopupForm] User navigated to #prebook during delay, skipping.');
+            return;
+        }
+
+        // Double-check if user pre-booked while waiting
+        if (localStorage.getItem('gharaangan_prebookings')) {
+            console.log('[PopupForm] User pre-booked during delay, skipping.');
+            return;
+        }
+
+        // Double-check if the inline pre-booking form is currently in view
+        const originalWrapper = document.querySelector('.form-card-wrapper');
+        if (originalWrapper) {
+            const originalFormRect = originalWrapper.getBoundingClientRect();
+            const formIsVisible = originalFormRect.top < window.innerHeight && originalFormRect.bottom > 0;
+            console.log('[PopupForm] Form position in viewport:', {
+                top: originalFormRect.top,
+                bottom: originalFormRect.bottom,
+                innerHeight: window.innerHeight,
+                formIsVisible: formIsVisible
+            });
+            if (formIsVisible) {
+                console.log('[PopupForm] Original form is visible on screen, skipping popup.');
+                return;
+            }
+        } else {
+            console.warn('[PopupForm] originalWrapper (.form-card-wrapper) not found in DOM!');
+        }
+
+        // Create popup modal container and content
+        const modalOverlay = document.createElement('div');
+        modalOverlay.className = 'modal-overlay';
+        modalOverlay.id = 'popup-prebook-modal';
+
+        const modalContent = document.createElement('div');
+        modalContent.className = 'modal-card popup-form-card';
+
+        // Add Close Button (X)
+        const closeBtn = document.createElement('button');
+        closeBtn.className = 'popup-close-btn';
+        closeBtn.id = 'close-popup-btn';
+        closeBtn.setAttribute('aria-label', 'Close Popup');
+        closeBtn.innerHTML = '&times;';
+        modalContent.appendChild(closeBtn);
+
+        // Clone the form wrapper
+        if (!originalWrapper) return;
+        const clonedWrapper = originalWrapper.cloneNode(true);
+
+        // Update elements IDs and references in the cloned card to avoid collisions
+        const form = clonedWrapper.querySelector('form');
+        form.id = 'popup-prebook-form';
+
+        const renameInput = (id, newId, errorId, newErrorId) => {
+            const input = clonedWrapper.querySelector(`#${id}`);
+            if (input) input.id = newId;
+            const error = clonedWrapper.querySelector(`#${errorId}`);
+            if (error) error.id = newErrorId;
+            const label = clonedWrapper.querySelector(`label[for="${id}"]`);
+            if (label) label.setAttribute('for', newId);
+        };
+
+        renameInput('full-name', 'popup-full-name', 'name-error', 'popup-name-error');
+        renameInput('mobile-number', 'popup-mobile-number', 'mobile-error', 'popup-mobile-error');
+        renameInput('ghee-quantity', 'popup-ghee-quantity', 'quantity-error', 'popup-quantity-error');
+        renameInput('state', 'popup-state', 'state-error', 'popup-state-error');
+        renameInput('city', 'popup-city', 'city-error', 'popup-city-error');
+
+        // Check if there is manual city input elements and rename them
+        const cityManualGroup = clonedWrapper.querySelector('#city-manual-group');
+        if (cityManualGroup) cityManualGroup.id = 'popup-city-manual-group';
+        const cityManualInput = clonedWrapper.querySelector('#city-manual');
+        if (cityManualInput) cityManualInput.id = 'popup-city-manual';
+        const cityManualError = clonedWrapper.querySelector('#city-manual-error');
+        if (cityManualError) cityManualError.id = 'popup-city-manual-error';
+
+        // Update submit button id
+        const submitBtn = clonedWrapper.querySelector('#submit-btn');
+        if (submitBtn) submitBtn.id = 'popup-submit-btn';
+
+        modalContent.appendChild(clonedWrapper);
+        modalOverlay.appendChild(modalContent);
+        document.body.appendChild(modalOverlay);
+
+        // Smooth fade-in overlay and modal scale-up
+        setTimeout(() => {
+            modalOverlay.classList.add('active');
+        }, 50);
+
+        // Close functions
+        const closePopup = () => {
+            modalOverlay.classList.remove('active');
+            setTimeout(() => {
+                modalOverlay.remove();
+            }, 400);
+        };
+
+        closeBtn.addEventListener('click', closePopup);
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) {
+                closePopup();
+            }
+        });
+
+        // Initialize state/city binding and validation for the popup form
+        setupFormValidation(form);
+
+    }, 3000);
 }
