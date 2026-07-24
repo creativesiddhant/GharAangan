@@ -2183,3 +2183,62 @@ p {
 }
 
 
+/* ==========================================================================
+   10. Pre-booking Price Preview Styles
+   ========================================================================== */
+.price-preview-box {
+    margin-top: 14px;
+    padding: 14px 18px;
+    background-color: rgba(250, 247, 240, 0.06); /* Premium semi-transparent light cream */
+    border: 1px solid rgba(212, 175, 55, 0.2); /* Soft gold border */
+    border-left: 4px solid var(--gold); /* Thick gold highlight bar */
+    border-radius: 6px;
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.12); /* Subtle gold background glow */
+    animation: fadeInDown 0.3s ease-out;
+}
+
+.price-preview-box.hidden {
+    display: none;
+}
+
+.price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.price-label {
+    font-size: 0.95rem;
+    color: var(--white); /* Bright white text for maximum readability */
+    font-weight: 600;
+    font-family: var(--font-sans);
+}
+
+.price-amount {
+    font-size: 1.4rem;
+    color: var(--gold); /* Bright gold accent */
+    font-weight: 700;
+    font-family: var(--font-sans);
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.6); /* Gold text glow effect */
+}
+
+.price-disclaimer {
+    font-size: 0.88rem;
+    color: rgba(250, 247, 240, 0.85); /* Highly visible light cream text */
+    line-height: 1.4;
+    margin: 0;
+    font-weight: 400;
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
