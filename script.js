@@ -3954,27 +3954,52 @@ function initPopupForm() {
    10. Pre-booking Price Preview Logic
    ========================================================================== */
 function initPricePreview() {
-    const qtySelect = document.getElementById('ghee-quantity');
-    const previewContainer = document.getElementById('price-preview-container');
-    const priceValue = document.getElementById('price-value');
-
-    if (!qtySelect || !previewContainer || !priceValue) return;
-
     // Launch Pre-booking prices list
     const prices = {
-        '500ml': '₹562.50',
-        '1 Litre': '₹1,126.00',
-        '2 Litres': '₹2,252.00',
-        '5 Litres': '₹5,628.00'
+        'A2 Desi Pahadi Ghee (500ml)': '₹563',
+        'A2 Desi Pahadi Ghee (1L)': '₹1,126',
+        'A2 Desi Pahadi Ghee (2L)': '₹2,252',
+        'A2 Desi Pahadi Ghee (5L)': '₹5,628',
+        'Pahadi Pisyu Bhaang Loon (200g)': '₹199',
+        'Pahadi Pisyu Chatpata Laal Mirch Loon (200g)': '₹199',
+        'Pahadi Pisyu Mix Seasoning Loon (200g)': '₹199',
+        'Pahadi Gud (400g)': '₹199',
+        'Pahadi Saunf Gud (400g)': '₹199',
+        'Pahadi Dry Fruits Gud (400g)': '₹399',
+        'Pahadi Dry Fruits Gud (1kg)': '₹699',
+        'Pahadi Kaju Gud (400g)': '₹250',
+        'Pahadi Badam Gud (400g)': '₹250',
+        'Pahadi Kismis Gud (400g)': '₹199',
+        'Pahadi Seeds Gud (400g)': '₹199',
+        'Pahadi Rajma (500g)': '₹200',
+        'Pahadi Black Soyabean (500g)': '₹200',
+        'Pahadi Gauhat Ki Dal (500g)': '₹200',
+        'Pahadi Lobia Dal (500g)': '₹200',
+        'Pahadi Buransh Juice (500ml)': '₹499',
+        'Pahadi Amla Juice (500ml)': '₹499',
+        'Pahadi Orange Juice (500ml)': '₹399',
+        'Original Pahadi Mandua Ka Aata (1kg)': '₹200',
+        'Original Pahadi Mandua Ka Aata (5kg)': '₹899'
     };
 
-    qtySelect.addEventListener('change', () => {
-        const val = qtySelect.value;
-        if (prices[val]) {
-            priceValue.textContent = prices[val];
-            previewContainer.classList.remove('hidden');
-        } else {
-            previewContainer.classList.add('hidden');
+    document.addEventListener('change', (e) => {
+        if (e.target && (e.target.id === 'ghee-quantity' || e.target.id === 'popup-ghee-quantity')) {
+            const qtySelect = e.target;
+            const form = qtySelect.closest('form');
+            if (!form) return;
+
+            const previewContainer = form.querySelector('.price-preview-box');
+            const priceValue = form.querySelector('.price-amount');
+
+            if (!previewContainer || !priceValue) return;
+
+            const val = qtySelect.value;
+            if (prices[val]) {
+                priceValue.textContent = prices[val];
+                previewContainer.classList.remove('hidden');
+            } else {
+                previewContainer.classList.add('hidden');
+            }
         }
     });
 }
