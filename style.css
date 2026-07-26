@@ -1385,11 +1385,31 @@ p {
     font-size: 0.85rem;
     color: #7A6C62;
     letter-spacing: 0.5px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0 12px;
 }
 
 .footer-gstin span {
     font-weight: 600;
     color: var(--bg-cream-dark);
+}
+
+.footer-gstin .footer-sep {
+    color: rgba(255, 255, 255, 0.15);
+    font-weight: 400;
+}
+
+@media (max-width: 576px) {
+    .footer-gstin {
+        flex-direction: column;
+        gap: 6px 0;
+    }
+    .footer-gstin .footer-sep {
+        display: none;
+    }
 }
 
 /* Sticky Mobile CTA Bar */
