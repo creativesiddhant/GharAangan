@@ -1380,6 +1380,18 @@ p {
     color: var(--gold) !important;
 }
 
+.footer-gstin {
+    margin-top: 10px;
+    font-size: 0.85rem;
+    color: #7A6C62;
+    letter-spacing: 0.5px;
+}
+
+.footer-gstin span {
+    font-weight: 600;
+    color: var(--bg-cream-dark);
+}
+
 /* Sticky Mobile CTA Bar */
 .mobile-sticky-cta {
     position: fixed;
