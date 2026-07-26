@@ -3270,18 +3270,6 @@ function setupFormValidation(form) {
 
         // Duplicate prevention using local storage
         let bookings = JSON.parse(localStorage.getItem('gharaangan_prebookings') || '[]');
-        const isDuplicate = bookings.some(booking => booking.mobile === mobile);
-
-        if (isDuplicate) {
-            const mobileGroup = mobileInput.closest('.input-group');
-            const mobileError = form.querySelector('.error-msg[id$="mobile-error"]');
-            if (mobileError) {
-                mobileError.textContent = "This mobile number has already pre-booked. We'll contact you soon!";
-            }
-            mobileGroup.classList.add('error');
-            mobileInput.focus();
-            return;
-        }
 
         // Show loading state
         submitBtn.disabled = true;
