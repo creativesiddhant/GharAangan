@@ -3524,7 +3524,10 @@ function initRecentBookingsNotifications() {
 
     // Standardize quantity strings to clean short-form showing product & quantity (e.g. "A2 Desi Pahadi Ghee - 1 Litre" instead of "1 Litre")
     function cleanQuantity(qty) {
-        const str = qty || '';
+        let str = qty || '';
+        if (str === '500ml' || str === 'A2 Desi Pahadi Ghee (500ml)') {
+            str = 'A2 Desi Pahadi Ghee (550ml)';
+        }
         if (!str) return "a product";
         
         // Legacy support

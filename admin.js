@@ -3254,7 +3254,7 @@ async function fetchBookings() {
             return;
         }
 
-        bookingsData = data || [];
+        bookingsData = (data || []).map(sanitizeBooking);
         updateDashboardView();
     } catch (err) {
         console.error('Fetch exception:', err);
@@ -3427,9 +3427,21 @@ function updateDashboardView() {
 /* ==========================================================================
    6. KPI Calculators
    ========================================================================== */
+/* Helper to sanitize a booking object's quantity from 500ml to 550ml for uniform display */
+function sanitizeBooking(booking) {
+    if (!booking) return booking;
+    if (booking.quantity === '500ml' || booking.quantity === 'A2 Desi Pahadi Ghee (500ml)') {
+        booking.quantity = 'A2 Desi Pahadi Ghee (550ml)';
+    }
+    return booking;
+}
+
 /* Helper to format product names and weights nicely for rankings and charts */
 function formatProductNameForRankings(qtyName) {
-    const str = qtyName || '';
+    let str = qtyName || '';
+    if (str === '500ml' || str === 'A2 Desi Pahadi Ghee (500ml)') {
+        str = 'A2 Desi Pahadi Ghee (550ml)';
+    }
     // If it's a legacy ghee string, expand it to include the product name
     if (str === '500ml' || str === '550ml' || str === '1 Litre' || str === '2 Litres' || str === '5 Litres') {
         return `A2 Desi Pahadi Ghee - ${str}`;
@@ -3503,7 +3515,7 @@ function updateKPIs() {
         }
     });
 
-    kpiTotalLiters.textContent = `${totalLiters} L`;
+    kpiTotalLiters.textContent = `${parseFloat(totalLiters.toFixed(2))} L`;
 
     // KPI 3: Popular Products Rankings (Top 6)
     const rankedProducts = Object.entries(qtyCounts)
@@ -3825,7 +3837,10 @@ function renderCharts() {
    ========================================================================== */
 /* Helper to split quantity into product type and size/weight */
 function parseProductAndQty(quantityStr) {
-    const str = quantityStr || '';
+    let str = quantityStr || '';
+    if (str === '500ml' || str === 'A2 Desi Pahadi Ghee (500ml)') {
+        str = 'A2 Desi Pahadi Ghee (550ml)';
+    }
     if (!str) {
         return { product: '—', qty: '—' };
     }
@@ -3949,7 +3964,7 @@ function initRealtimeSubscription() {
             // Push new booking to top of array if not already present
             const alreadyExists = bookingsData.some(b => b.id === payload.new.id);
             if (!alreadyExists) {
-                bookingsData.unshift(payload.new);
+                bookingsData.unshift(sanitizeBooking(payload.new));
                 updateDashboardView();
                 triggerRealtimeBanner();
             }
@@ -3962,7 +3977,7 @@ function initRealtimeSubscription() {
             console.log('Real-time Update Payload:', payload);
             const idx = bookingsData.findIndex(b => b.id === payload.new.id);
             if (idx !== -1) {
-                bookingsData[idx] = payload.new;
+                bookingsData[idx] = sanitizeBooking(payload.new);
                 updateDashboardView();
             } else {
                 fetchBookings();
@@ -4404,7 +4419,7 @@ if (manualBookingForm) {
                 if (data && data.length > 0) {
                     const alreadyExists = bookingsData.some(b => b.id === data[0].id);
                     if (!alreadyExists) {
-                        bookingsData.unshift(data[0]);
+                        bookingsData.unshift(sanitizeBooking(data[0]));
                         updateDashboardView();
                         addedLocally = true;
                     }
@@ -4626,7 +4641,7 @@ if (editBookingForm) {
                 alert('Failed to update booking: ' + error.message);
             } else {
                 // Update locally
-                const updatedRow = data && data[0];
+                const updatedRow = sanitizeBooking(data && data[0]);
                 let updated = false;
                 if (updatedRow) {
                     const idx = bookingsData.findIndex(b => b.id === id);
