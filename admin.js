@@ -3431,7 +3431,7 @@ function updateDashboardView() {
 function formatProductNameForRankings(qtyName) {
     const str = qtyName || '';
     // If it's a legacy ghee string, expand it to include the product name
-    if (str === '500ml' || str === '1 Litre' || str === '2 Litres' || str === '5 Litres') {
+    if (str === '500ml' || str === '550ml' || str === '1 Litre' || str === '2 Litres' || str === '5 Litres') {
         return `A2 Desi Pahadi Ghee - ${str}`;
     }
     
@@ -3458,7 +3458,7 @@ function formatProductNameForChart(qtyName) {
 /* Helper to map old legacy ghee strings to the new dropdown product values when editing */
 function mapLegacyQuantityToNewProduct(qty) {
     const val = qty || '';
-    if (val === '500ml') return 'A2 Desi Pahadi Ghee (500ml)';
+    if (val === '500ml' || val === 'A2 Desi Pahadi Ghee (500ml)') return 'A2 Desi Pahadi Ghee (550ml)';
     if (val === '1 Litre') return 'A2 Desi Pahadi Ghee (1L)';
     if (val === '2 Litres') return 'A2 Desi Pahadi Ghee (2L)';
     if (val === '5 Litres') return 'A2 Desi Pahadi Ghee (5L)';
@@ -3478,7 +3478,7 @@ function updateKPIs() {
         let qty = booking.quantity || '';
         
         // Map legacy ghee package strings to new counterparts
-        if (qty === '500ml') qty = 'A2 Desi Pahadi Ghee (500ml)';
+        if (qty === '500ml' || qty === 'A2 Desi Pahadi Ghee (500ml)') qty = 'A2 Desi Pahadi Ghee (550ml)';
         else if (qty === '1 Litre') qty = 'A2 Desi Pahadi Ghee (1L)';
         else if (qty === '2 Litres') qty = 'A2 Desi Pahadi Ghee (2L)';
         else if (qty === '5 Litres') qty = 'A2 Desi Pahadi Ghee (5L)';
@@ -3488,9 +3488,11 @@ function updateKPIs() {
         }
 
         // Sum Liters Churned only for Ghee
-        if (qty.includes('Ghee') || qty === '500ml' || qty === '1 Litre' || qty === '2 Litres' || qty === '5 Litres') {
+        if (qty.includes('Ghee') || qty === '500ml' || qty === '550ml' || qty === '1 Litre' || qty === '2 Litres' || qty === '5 Litres') {
             if (qty.includes('500ml') || qty === '500ml') {
                 totalLiters += 0.5;
+            } else if (qty.includes('550ml') || qty === '550ml') {
+                totalLiters += 0.55;
             } else if (qty.includes('1L') || qty === '1 Litre') {
                 totalLiters += 1.0;
             } else if (qty.includes('2L') || qty === '2 Litres') {
@@ -3551,7 +3553,7 @@ function updateKPIs() {
 function renderCharts() {
     // 7A. Product demand distribution datasets (collects data for all catalog products including 0 counts)
     const catalogProducts = [
-        "A2 Desi Pahadi Ghee (500ml)",
+        "A2 Desi Pahadi Ghee (550ml)",
         "A2 Desi Pahadi Ghee (1L)",
         "A2 Desi Pahadi Ghee (2L)",
         "A2 Desi Pahadi Ghee (5L)",
@@ -3586,7 +3588,7 @@ function renderCharts() {
         let prod = booking.quantity || 'Unknown';
         
         // Map legacy ghee package strings to new counterparts
-        if (prod === '500ml') prod = 'A2 Desi Pahadi Ghee (500ml)';
+        if (prod === '500ml' || prod === 'A2 Desi Pahadi Ghee (500ml)') prod = 'A2 Desi Pahadi Ghee (550ml)';
         else if (prod === '1 Litre') prod = 'A2 Desi Pahadi Ghee (1L)';
         else if (prod === '2 Litres') prod = 'A2 Desi Pahadi Ghee (2L)';
         else if (prod === '5 Litres') prod = 'A2 Desi Pahadi Ghee (5L)';
@@ -3673,8 +3675,9 @@ function renderCharts() {
         let qtyLitres = 0;
         const qtyStr = booking.quantity || '';
         if (qtyStr) {
-            if (qtyStr.includes('Ghee') || qtyStr === '500ml' || qtyStr === '1 Litre' || qtyStr === '2 Litres' || qtyStr === '5 Litres') {
+            if (qtyStr.includes('Ghee') || qtyStr === '500ml' || qtyStr === '550ml' || qtyStr === '1 Litre' || qtyStr === '2 Litres' || qtyStr === '5 Litres') {
                 if (qtyStr.includes('500ml') || qtyStr === '500ml') qtyLitres = 0.5;
+                else if (qtyStr.includes('550ml') || qtyStr === '550ml') qtyLitres = 0.55;
                 else if (qtyStr.includes('1L') || qtyStr === '1 Litre') qtyLitres = 1;
                 else if (qtyStr.includes('2L') || qtyStr === '2 Litres') qtyLitres = 2;
                 else if (qtyStr.includes('5L') || qtyStr === '5 Litres') qtyLitres = 5;
@@ -3837,7 +3840,7 @@ function parseProductAndQty(quantityStr) {
     }
     
     // Legacy support
-    if (str === '500ml' || str === '1 Litre' || str === '2 Litres' || str === '5 Litres') {
+    if (str === '500ml' || str === '550ml' || str === '1 Litre' || str === '2 Litres' || str === '5 Litres') {
         return {
             product: 'A2 Desi Pahadi Ghee',
             qty: str

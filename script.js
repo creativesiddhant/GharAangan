@@ -3528,7 +3528,7 @@ function initRecentBookingsNotifications() {
         if (!str) return "a product";
         
         // Legacy support
-        if (str === '500ml' || str === '1 Litre' || str === '2 Litres' || str === '5 Litres') {
+        if (str === '500ml' || str === '550ml' || str === '1 Litre' || str === '2 Litres' || str === '5 Litres') {
             return `A2 Desi Pahadi Ghee - ${str}`;
         }
         
@@ -3945,6 +3945,7 @@ function initPricePreview() {
     // Launch Pre-booking prices list
     const prices = {
         'A2 Desi Pahadi Ghee (500ml)': '₹563',
+        'A2 Desi Pahadi Ghee (550ml)': '₹563',
         'A2 Desi Pahadi Ghee (1L)': '₹1,126',
         'A2 Desi Pahadi Ghee (2L)': '₹2,252',
         'A2 Desi Pahadi Ghee (5L)': '₹5,628',
