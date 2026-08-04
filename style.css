@@ -2520,4 +2520,51 @@ p {
     }
 }
 
+/* ==========================================================================
+   12. Responsive Overrides for Launch and General Elements
+   ========================================================================== */
+@media (max-width: 992px) {
+    .launch-announcement-card {
+        text-align: center;
+        margin-left: auto;
+        margin-right: auto;
+        max-width: 550px;
+        width: 100%;
+    }
+    .shopify-cta-wrapper {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 576px) {
+    .top-announcement-bar {
+        font-size: 0.8rem;
+        padding: 8px 12px;
+    }
+    
+    .launch-announcement-card {
+        padding: 20px 16px;
+        margin-bottom: 24px;
+    }
+    
+    .launch-text {
+        font-size: 0.95rem;
+        line-height: 1.5;
+    }
+    
+    .btn-shopify {
+        width: 100%;
+        padding: 12px 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .category-card {
+        min-width: 100%;
+        width: 100%;
+        max-width: 100%;
+    }
+}
+
+
 
