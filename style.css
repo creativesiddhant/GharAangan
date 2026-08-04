@@ -2362,3 +2362,162 @@ p {
     }
 }
 
+/* ==========================================================================
+   11. We Are Launched - Launch & Shopify Redirect Styles
+   ========================================================================== */
+.top-announcement-bar {
+    background: linear-gradient(90deg, #1f2937, #111827);
+    border-bottom: 2px solid var(--gold);
+    color: var(--white);
+    padding: 10px 20px;
+    font-size: 0.88rem;
+    font-family: var(--font-sans);
+    font-weight: 500;
+    text-align: center;
+    position: relative;
+    z-index: 1000;
+}
+
+.announcement-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.announcement-badge {
+    background-color: var(--gold);
+    color: #111827;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    animation: pulse-gold-badge 2s infinite;
+}
+
+.announcement-link {
+    color: var(--gold-light);
+    text-decoration: underline;
+    font-weight: 600;
+    margin-left: 5px;
+    transition: color 0.3s ease;
+}
+
+.announcement-link:hover {
+    color: var(--white);
+}
+
+.launch-announcement-card {
+    background: rgba(255, 255, 255, 0.9);
+    border: 2px solid rgba(214, 175, 55, 0.4);
+    border-radius: var(--border-radius-lg);
+    padding: 28px;
+    width: 100%;
+    margin-bottom: 30px;
+    box-shadow: 0 15px 35px rgba(214, 175, 55, 0.12);
+    backdrop-filter: blur(12px);
+    text-align: left;
+    transition: var(--transition-smooth);
+}
+
+.launch-announcement-card:hover {
+    box-shadow: 0 20px 45px rgba(214, 175, 55, 0.2);
+    border-color: var(--gold);
+}
+
+.launch-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: var(--white);
+    padding: 6px 14px;
+    border-radius: 50px;
+    font-family: var(--font-sans);
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+}
+
+.pulse-dot {
+    width: 8px;
+    height: 8px;
+    background-color: var(--white);
+    border-radius: 50%;
+    display: inline-block;
+    animation: pulse-dot-white 1.5s infinite;
+}
+
+.launch-text {
+    font-size: 1.05rem;
+    color: var(--text-dark);
+    line-height: 1.6;
+    margin-bottom: 20px;
+    font-family: var(--font-sans);
+}
+
+.btn-shopify {
+    background: linear-gradient(135deg, #95BF47, #7ea33b);
+    color: var(--white) !important;
+    border: none;
+    font-family: var(--font-sans);
+    font-weight: 700;
+    padding: 12px 24px;
+    border-radius: 50px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    text-decoration: none;
+    transition: var(--transition-smooth);
+    box-shadow: 0 8px 20px rgba(149, 191, 71, 0.25);
+    cursor: pointer;
+}
+
+.btn-shopify:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 25px rgba(149, 191, 71, 0.4);
+    background: linear-gradient(135deg, #a6d44f, #95BF47);
+}
+
+.shopify-btn-logo {
+    height: 20px;
+    width: auto;
+    object-fit: contain;
+    vertical-align: middle;
+}
+
+@keyframes pulse-gold-badge {
+    0% {
+        box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.5);
+    }
+    70% {
+        box-shadow: 0 0 0 8px rgba(212, 175, 55, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(212, 175, 55, 0);
+    }
+}
+
+@keyframes pulse-dot-white {
+    0% {
+        transform: scale(0.9);
+        opacity: 0.6;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(0.9);
+        opacity: 0.6;
+    }
+}
+
+
