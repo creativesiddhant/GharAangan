@@ -3054,8 +3054,8 @@ document.addEventListener('DOMContentLoaded', () => {
    1. Countdown Timer Logic
    ========================================================================== */
 function initCountdown() {
-    // Target date: August 5, 2026 at 00:00:00 (Local Time)
-    const targetDate = new Date('August 5, 2026 00:00:00').getTime();
+    // Target date: August 5, 2026 at 06:00:00 (Local Time)
+    const targetDate = new Date('August 5, 2026 06:00:00').getTime();
 
     // DOM Elements
     const daysEl = document.getElementById('days');
