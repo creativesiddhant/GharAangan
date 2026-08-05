@@ -3048,7 +3048,51 @@ document.addEventListener('DOMContentLoaded', () => {
     logVisit();
     initRecentBookingsNotifications();
     initPopupForm();
+    initLaunchCelebration();
 });
+
+/* ==========================================================================
+   0. Launch Celebration Confetti
+   ========================================================================== */
+function initLaunchCelebration() {
+    // Colors matching Ghar Aangan branding (Forest Green, Gold, Cream)
+    const brandColors = ['#D4AF37', '#1E3F20', '#FAF7F0', '#E6C65E', '#2D5E30'];
+
+    // Wait 1 second after page load for maximum visual impact
+    setTimeout(() => {
+        if (typeof confetti === 'function') {
+            // 1. First big burst from the center
+            confetti({
+                particleCount: 120,
+                spread: 80,
+                origin: { y: 0.6 },
+                colors: brandColors
+            });
+
+            // 2. Left side burst spraying up and to the right
+            setTimeout(() => {
+                confetti({
+                    particleCount: 80,
+                    angle: 60,
+                    spread: 60,
+                    origin: { x: 0, y: 0.8 },
+                    colors: brandColors
+                });
+            }, 300);
+
+            // 3. Right side burst spraying up and to the left
+            setTimeout(() => {
+                confetti({
+                    particleCount: 80,
+                    angle: 120,
+                    spread: 60,
+                    origin: { x: 1, y: 0.8 },
+                    colors: brandColors
+                });
+            }, 500);
+        }
+    }, 1000);
+}
 
 /* ==========================================================================
    1. Countdown Timer Logic
