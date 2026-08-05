@@ -3290,7 +3290,7 @@ function setupFormValidation(form) {
             // Populate success modal
             savedMobileEl.textContent = `+91 ${mobile.substring(0, 5)}-${mobile.substring(5)}`;
             savedQuantityEl.textContent = quantity;
-            modalSuccessMsg.innerHTML = `Congratulations <strong>${name}</strong>! Your batch reservation has been securely registered. We will send updates to your mobile number before our launch on <strong>5th August 2026</strong>.`;
+            modalSuccessMsg.innerHTML = `Congratulations <strong>${name}</strong>! Your batch booking has been securely registered. We will contact you on your mobile number to confirm shipping details and payment.`;
 
             // Reset Form
             form.reset();
@@ -3623,7 +3623,7 @@ function initRecentBookingsNotifications() {
                 <i class="fa-solid fa-check"></i>
             </div>
             <div class="booking-toast-content">
-                <strong>${escapeHtml(booking.name)}</strong>${locationPhrase} recently pre-booked <strong>${booking.quantity}</strong>.
+                <strong>${escapeHtml(booking.name)}</strong>${locationPhrase} recently booked <strong>${booking.quantity}</strong>.
             </div>
             <button class="booking-toast-close" title="Close Notification">
                 <i class="fa-solid fa-xmark"></i>
@@ -3945,13 +3945,13 @@ function initPopupForm() {
    10. Pre-booking Price Preview Logic
    ========================================================================== */
 function initPricePreview() {
-    // Launch Pre-booking prices list
+    // Launch standard pricing list (25% discount ended)
     const prices = {
-        'A2 Desi Pahadi Ghee (500ml)': '₹563',
-        'A2 Desi Pahadi Ghee (550ml)': '₹563',
-        'A2 Desi Pahadi Ghee (1L)': '₹1,126',
-        'A2 Desi Pahadi Ghee (2L)': '₹2,252',
-        'A2 Desi Pahadi Ghee (5L)': '₹5,628',
+        'A2 Desi Pahadi Ghee (500ml)': '₹750',
+        'A2 Desi Pahadi Ghee (550ml)': '₹750',
+        'A2 Desi Pahadi Ghee (1L)': '₹1,501',
+        'A2 Desi Pahadi Ghee (2L)': '₹3,001',
+        'A2 Desi Pahadi Ghee (5L)': '₹7,505',
         'Pahadi Pisyu Bhaang Loon (200g)': '₹199',
         'Pahadi Pisyu Chatpata Laal Mirch Loon (200g)': '₹199',
         'Pahadi Pisyu Mix Seasoning Loon (200g)': '₹199',
