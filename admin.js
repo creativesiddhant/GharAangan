@@ -3920,10 +3920,10 @@ function renderBookingsTable() {
                     <a href="tel:+91${booking.mobile_number}" class="btn-dial" title="Call Customer">
                         <i class="fa-solid fa-phone"></i>
                      </a>
-                    <button class="btn-edit" onclick="openEditBookingModal(${booking.id})" title="Edit Pre-booking" style="background-color: var(--accent-light); color: var(--gold); border: 1px solid rgba(212,175,55,0.3); border-radius: var(--border-radius-sm); padding: 8px; width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: var(--transition-smooth);">
+                    <button class="btn-edit" onclick="openEditBookingModal(${booking.id})" title="Edit Booking" style="background-color: var(--accent-light); color: var(--gold); border: 1px solid rgba(212,175,55,0.3); border-radius: var(--border-radius-sm); padding: 8px; width: 34px; height: 34px; display: inline-flex; align-items: center; justify-content: center; cursor: pointer; transition: var(--transition-smooth);">
                         <i class="fa-regular fa-pen-to-square"></i>
                     </button>
-                    <button class="btn-delete" onclick="deleteBooking(${booking.id})" title="Delete Pre-booking">
+                    <button class="btn-delete" onclick="deleteBooking(${booking.id})" title="Delete Booking">
                         <i class="fa-regular fa-trash-can"></i>
                     </button>
                 </div>
@@ -4035,7 +4035,7 @@ function triggerRealtimeBanner() {
    ========================================================================== */
 exportCsvBtn.addEventListener('click', () => {
     if (bookingsData.length === 0) {
-        alert('No pre-bookings available to export.');
+        alert('No bookings available to export.');
         return;
     }
 
@@ -4191,8 +4191,8 @@ window.deleteBooking = async function(id) {
     if (!supabaseClient) return;
 
     showConfirm(
-        "Delete Pre-booking",
-        "Are you sure you want to delete this pre-booking entry? This action cannot be undone.",
+        "Delete Booking",
+        "Are you sure you want to delete this booking entry? This action cannot be undone.",
         async () => {
             try {
                 const { error } = await supabaseClient
@@ -4429,7 +4429,7 @@ if (manualBookingForm) {
                     await fetchBookings();
                 }
                 
-                alert('Pre-booking successfully recorded!');
+                alert('Booking successfully recorded!');
             }
         } catch (err) {
             console.error('Insert manual booking exception:', err);
