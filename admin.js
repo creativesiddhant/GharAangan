@@ -3043,8 +3043,13 @@ const visitorsTableBody = document.getElementById('visitors-table-body');
 const clearVisitsBtn = document.getElementById('clear-visits-btn');
 
 const tableSearchInput = document.getElementById('table-search');
+const paymentStatusFilter = document.getElementById('payment-status-filter');
 const exportCsvBtn = document.getElementById('export-csv-btn');
 const bookingsTableBody = document.getElementById('bookings-table-body');
+
+const kpiDoneCount = document.getElementById('kpi-done-count');
+const kpiPendingCount = document.getElementById('kpi-pending-count');
+const kpiCancelledCount = document.getElementById('kpi-cancelled-count');
 
 /* ==========================================================================
    Cookie Helpers for Persistent Sessions
@@ -3427,12 +3432,22 @@ function updateDashboardView() {
 /* ==========================================================================
    6. KPI Calculators
    ========================================================================== */
-/* Helper to sanitize a booking object's quantity from 500ml to 550ml for uniform display */
+/* Helper to normalize payment status values to uniform standard ('pending', 'done', 'cancelled') */
+function normalizePaymentStatus(status) {
+    if (!status) return 'pending';
+    const s = String(status).trim().toLowerCase();
+    if (s === 'done' || s === 'paid' || s === 'completed' || s === 'success') return 'done';
+    if (s === 'cancelled' || s === 'canceled' || s === 'rejected') return 'cancelled';
+    return 'pending';
+}
+
+/* Helper to sanitize a booking object's quantity and payment status for uniform display */
 function sanitizeBooking(booking) {
     if (!booking) return booking;
     if (booking.quantity === '500ml' || booking.quantity === 'A2 Desi Pahadi Ghee (500ml)') {
         booking.quantity = 'A2 Desi Pahadi Ghee (550ml)';
     }
+    booking.payment_status = normalizePaymentStatus(booking.payment_status);
     return booking;
 }
 
@@ -3481,6 +3496,22 @@ function updateKPIs() {
     // KPI 1: Total count
     const totalCount = bookingsData.length;
     kpiTotalBookings.textContent = totalCount;
+
+    // Payment status counts breakdown
+    let doneCount = 0;
+    let pendingCount = 0;
+    let cancelledCount = 0;
+
+    bookingsData.forEach(booking => {
+        const pStatus = normalizePaymentStatus(booking.payment_status);
+        if (pStatus === 'done') doneCount++;
+        else if (pStatus === 'cancelled') cancelledCount++;
+        else pendingCount++;
+    });
+
+    if (kpiDoneCount) kpiDoneCount.textContent = doneCount;
+    if (kpiPendingCount) kpiPendingCount.textContent = pendingCount;
+    if (kpiCancelledCount) kpiCancelledCount.textContent = cancelledCount;
 
     // KPI 2: Total Liters (Ghee Churned Only)
     let totalLiters = 0;
@@ -3869,19 +3900,29 @@ function parseProductAndQty(quantityStr) {
 }
 
 function renderBookingsTable() {
-    const filter = tableSearchInput.value.toLowerCase().trim();
+    const filter = (tableSearchInput ? tableSearchInput.value : '').toLowerCase().trim();
+    const statusFilter = (paymentStatusFilter ? paymentStatusFilter.value : 'all').toLowerCase().trim();
     bookingsTableBody.innerHTML = '';
 
     const filteredData = bookingsData.filter(booking => {
+        const pStatus = normalizePaymentStatus(booking.payment_status);
+        if (statusFilter !== 'all' && pStatus !== statusFilter) {
+            return false;
+        }
+
+        if (!filter) return true;
+
         const name = (booking.full_name || '').toLowerCase();
         const mobile = (booking.mobile_number || '').toLowerCase();
         const city = (booking.city || '').toLowerCase();
         const state = (booking.state || '').toLowerCase();
-        return name.includes(filter) || mobile.includes(filter) || city.includes(filter) || state.includes(filter);
+        const prod = (booking.quantity || '').toLowerCase();
+        const statusMatch = pStatus.includes(filter);
+        return name.includes(filter) || mobile.includes(filter) || city.includes(filter) || state.includes(filter) || prod.includes(filter) || statusMatch;
     });
 
     if (filteredData.length === 0) {
-        bookingsTableBody.innerHTML = `<tr><td colspan="7" class="table-no-data-row">No bookings match search criteria.</td></tr>`;
+        bookingsTableBody.innerHTML = `<tr><td colspan="8" class="table-no-data-row">No bookings match search or filter criteria.</td></tr>`;
         return;
     }
 
@@ -3904,8 +3945,9 @@ function renderBookingsTable() {
         const state = booking.state ? escapeHtml(booking.state) : '';
         const locationStr = (city && state) ? `${city}, ${state}` : (city || state || '—');
 
-        // Parse product and quantity
+        // Parse product, quantity, and payment status
         const parsed = parseProductAndQty(booking.quantity);
+        const pStatus = normalizePaymentStatus(booking.payment_status);
 
         // Cells
         row.innerHTML = `
@@ -3915,6 +3957,19 @@ function renderBookingsTable() {
             <td>${locationStr}</td>
             <td><span class="qty-badge" style="background: rgba(30, 63, 32, 0.06); color: var(--primary-green); font-weight: 500;">${escapeHtml(parsed.product)}</span></td>
             <td><span class="qty-badge" style="background: rgba(212, 175, 55, 0.12); color: var(--gold-dark); font-weight: 500;">${escapeHtml(parsed.qty)}</span></td>
+            <td>
+                <div class="payment-status-wrapper">
+                    <select class="payment-status-select status-${pStatus}" 
+                            data-booking-id="${booking.id}" 
+                            data-prev-status="${pStatus}" 
+                            onchange="updatePaymentStatus(${booking.id}, this.value, this)" 
+                            title="Click to change payment status">
+                        <option value="pending" ${pStatus === 'pending' ? 'selected' : ''}>⏳ Pending</option>
+                        <option value="done" ${pStatus === 'done' ? 'selected' : ''}>✅ Done</option>
+                        <option value="cancelled" ${pStatus === 'cancelled' ? 'selected' : ''}>❌ Cancelled</option>
+                    </select>
+                </div>
+            </td>
             <td>
                 <div style="display: flex; gap: 8px;">
                     <a href="tel:+91${booking.mobile_number}" class="btn-dial" title="Call Customer">
@@ -3934,8 +3989,9 @@ function renderBookingsTable() {
     });
 }
 
-// Search keyup filter
-tableSearchInput.addEventListener('keyup', renderBookingsTable);
+// Search and filter listeners
+if (tableSearchInput) tableSearchInput.addEventListener('keyup', renderBookingsTable);
+if (paymentStatusFilter) paymentStatusFilter.addEventListener('change', renderBookingsTable);
 
 // Escapes HTML tags to prevent XSS in table names
 function escapeHtml(str) {
@@ -4074,13 +4130,14 @@ exportCsvBtn.addEventListener('click', () => {
         const rawQty = booking.quantity || '';
         const qty = formatProductNameForRankings(rawQty); // Uses formatter to include product name for legacy Ghee records
         const dateStr = booking.created_at ? new Date(booking.created_at).toISOString().substring(0, 10) : '';
+        const payStatus = normalizePaymentStatus(booking.payment_status);
         
         // Shopify tags: comma-separated list of tags
-        const tagsList = ["Prebooking", `Product: ${qty}`];
+        const tagsList = ["Prebooking", `Product: ${qty}`, `Payment: ${payStatus.toUpperCase()}`];
         const tags = `"${tagsList.join(', ')}"`;
 
-        // 4. Create Note with date & time info
-        const note = `"Pre-booked ${qty} on ${dateStr} via Coming Soon Landing Page."`;
+        // 4. Create Note with date, item & payment status info
+        const note = `"Pre-booked ${qty} on ${dateStr} via Coming Soon Landing Page. Payment Status: ${payStatus.toUpperCase()}."`;
 
         // 5. Address / Location
         const city = `"${(booking.city || '').replace(/"/g, '""')}"`;
@@ -4137,8 +4194,6 @@ exportCsvBtn.addEventListener('click', () => {
     link.click();
     document.body.removeChild(link);
 });
-
-
 
 // Helper for custom confirmation modal
 function showConfirm(title, message, onConfirm) {
@@ -4214,6 +4269,68 @@ window.deleteBooking = async function(id) {
             }
         }
     );
+};
+
+// 11B. Inline Update Payment Status Action
+window.updatePaymentStatus = async function(id, newStatus, selectEl) {
+    if (!supabaseClient) {
+        alert('Supabase client is not initialized.');
+        return;
+    }
+
+    const normalized = normalizePaymentStatus(newStatus);
+    const prevStatus = selectEl ? (selectEl.getAttribute('data-prev-status') || 'pending') : 'pending';
+
+    if (selectEl) {
+        selectEl.disabled = true;
+        selectEl.classList.add('status-updating');
+    }
+
+    try {
+        const { data, error } = await supabaseClient
+            .from('prebookings')
+            .update({ payment_status: normalized })
+            .eq('id', id)
+            .select();
+
+        console.log('[UpdatePaymentStatus] Response:', { data, error });
+
+        if (error) {
+            console.error('Error updating payment status:', error.message);
+            alert('Failed to update payment status: ' + error.message);
+            if (selectEl) {
+                selectEl.value = prevStatus;
+                selectEl.className = `payment-status-select status-${prevStatus}`;
+            }
+        } else {
+            // Update in local data
+            const booking = bookingsData.find(b => b.id === id);
+            if (booking) {
+                booking.payment_status = normalized;
+            }
+            if (selectEl) {
+                selectEl.setAttribute('data-prev-status', normalized);
+                selectEl.className = `payment-status-select status-${normalized}`;
+                selectEl.classList.add('status-updated-flash');
+                setTimeout(() => {
+                    selectEl.classList.remove('status-updated-flash');
+                }, 800);
+            }
+            updateKPIs();
+        }
+    } catch (err) {
+        console.error('Payment update exception:', err);
+        alert('An unexpected error occurred while updating payment status.');
+        if (selectEl) {
+            selectEl.value = prevStatus;
+            selectEl.className = `payment-status-select status-${prevStatus}`;
+        }
+    } finally {
+        if (selectEl) {
+            selectEl.disabled = false;
+            selectEl.classList.remove('status-updating');
+        }
+    }
 };
 
 // 12. Clear Visitor Logs Action (authenticated users only via RLS)
@@ -4310,6 +4427,9 @@ function resetManualForm() {
     if (manualBookingForm) {
         manualBookingForm.reset();
     }
+
+    const manualPaySelect = document.getElementById('manual-payment-status');
+    if (manualPaySelect) manualPaySelect.value = 'pending';
     
     // Clear validation error classes
     if (manualNameGroup) manualNameGroup.classList.remove('invalid');
@@ -4340,6 +4460,8 @@ if (manualBookingForm) {
         const quantity = manualQuantitySelect.value;
         const stateVal = document.getElementById('manual-state') ? document.getElementById('manual-state').value.trim() : '';
         const cityVal = document.getElementById('manual-city') ? document.getElementById('manual-city').value.trim() : '';
+        const manualPaySelect = document.getElementById('manual-payment-status');
+        const paymentStatus = normalizePaymentStatus(manualPaySelect ? manualPaySelect.value : 'pending');
         
         // 1. Validate Name
         if (!fullName) {
@@ -4390,7 +4512,14 @@ if (manualBookingForm) {
             const { data, error } = await supabaseClient
                 .from('prebookings')
                 .insert([
-                    { full_name: fullName, mobile_number: mobileNumber, quantity: quantity, city: cityVal, state: stateVal }
+                    { 
+                        full_name: fullName, 
+                        mobile_number: mobileNumber, 
+                        quantity: quantity, 
+                        city: cityVal, 
+                        state: stateVal,
+                        payment_status: paymentStatus
+                    }
                 ])
                 .select();
                 
@@ -4549,6 +4678,12 @@ window.openEditBookingModal = function(id) {
         editCityInput.appendChild(defaultOpt);
     }
     editQuantitySelect.value = mapLegacyQuantityToNewProduct(booking.quantity || '');
+    
+    // Set payment status dropdown value
+    const editPaymentSelect = document.getElementById('edit-payment-status');
+    if (editPaymentSelect) {
+        editPaymentSelect.value = normalizePaymentStatus(booking.payment_status);
+    }
 
     // Show modal
     if (editBookingModal) {
@@ -4584,6 +4719,8 @@ if (editBookingForm) {
         const city = editCityInput.value.trim();
         const state = editStateInput.value.trim();
         const quantity = editQuantitySelect.value;
+        const editPaymentSelect = document.getElementById('edit-payment-status');
+        const paymentStatus = normalizePaymentStatus(editPaymentSelect ? editPaymentSelect.value : 'pending');
 
         // Validate fields
         if (!fullName) {
@@ -4629,7 +4766,8 @@ if (editBookingForm) {
                     mobile_number: mobileNumber,
                     city: city,
                     state: state,
-                    quantity: quantity
+                    quantity: quantity,
+                    payment_status: paymentStatus
                 })
                 .eq('id', id)
                 .select();

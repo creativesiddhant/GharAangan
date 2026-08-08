@@ -98,6 +98,11 @@
                     <div class="kpi-body">
                         <h3>Total Bookings</h3>
                         <p id="kpi-total-bookings" class="kpi-number">0</p>
+                        <div class="payment-kpi-breakdown" id="payment-kpi-breakdown">
+                            <span class="pay-tag tag-done" title="Paid/Done Bookings"><i class="fa-solid fa-circle-check"></i> <span id="kpi-done-count">0</span> Done</span>
+                            <span class="pay-tag tag-pending" title="Pending Bookings"><i class="fa-solid fa-clock"></i> <span id="kpi-pending-count">0</span> Pending</span>
+                            <span class="pay-tag tag-cancelled" title="Cancelled Bookings"><i class="fa-solid fa-ban"></i> <span id="kpi-cancelled-count">0</span> Cancelled</span>
+                        </div>
                     </div>
                 </div>
 
@@ -188,9 +193,17 @@
                         </div>
                         
                         <div class="list-actions">
+                            <div class="filter-box">
+                                <select id="payment-status-filter" class="payment-filter-select" title="Filter by Payment Status">
+                                    <option value="all">All Payment Status</option>
+                                    <option value="pending">⏳ Pending</option>
+                                    <option value="done">✅ Done</option>
+                                    <option value="cancelled">❌ Cancelled</option>
+                                </select>
+                            </div>
                             <div class="search-box">
                                 <i class="fa-solid fa-magnifying-glass"></i>
-                                <input type="text" id="table-search" placeholder="Search by name or mobile...">
+                                <input type="text" id="table-search" placeholder="Search by name, mobile, city...">
                             </div>
                             <div class="action-buttons-group">
                                 <button id="add-booking-btn" class="btn btn-primary btn-sm"><i class="fa-solid fa-plus"></i> Add Booking</button>
@@ -210,12 +223,13 @@
                                     <th>Location</th>
                                     <th>Product Selected</th>
                                     <th>Quantity Selected</th>
+                                    <th>Payment Status</th>
                                     <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody id="bookings-table-body">
                                 <tr>
-                                    <td colspan="7" class="table-loading-row">
+                                    <td colspan="8" class="table-loading-row">
                                         <i class="fa-solid fa-spinner fa-spin"></i> Loading bookings list...
                                     </td>
                                 </tr>
@@ -386,6 +400,17 @@
                     </div>
                     <span class="error-msg" id="manual-quantity-error">Please select a product</span>
                 </div>
+
+                <div class="input-group" id="manual-payment-status-group">
+                    <label for="manual-payment-status"><i class="fa-solid fa-credit-card"></i> Payment Status</label>
+                    <div class="custom-select-wrapper">
+                        <select id="manual-payment-status">
+                            <option value="pending" selected>⏳ Pending</option>
+                            <option value="done">✅ Done (Paid)</option>
+                            <option value="cancelled">❌ Cancelled</option>
+                        </select>
+                    </div>
+                </div>
                 
                 <div class="modal-actions" style="margin-top: 30px; display: flex; gap: 12px; justify-content: flex-end;">
                     <button type="button" id="close-add-booking-modal" class="btn btn-secondary btn-sm" style="border-radius: var(--border-radius-md);">Cancel</button>
@@ -519,6 +544,17 @@
                         </select>
                     </div>
                     <span class="error-msg" id="edit-quantity-error">Please select a product</span>
+                </div>
+
+                <div class="input-group" id="edit-payment-status-group">
+                    <label for="edit-payment-status"><i class="fa-solid fa-credit-card"></i> Payment Status</label>
+                    <div class="custom-select-wrapper">
+                        <select id="edit-payment-status">
+                            <option value="pending">⏳ Pending</option>
+                            <option value="done">✅ Done (Paid)</option>
+                            <option value="cancelled">❌ Cancelled</option>
+                        </select>
+                    </div>
                 </div>
                 
                 <div class="modal-actions" style="margin-top: 30px; display: flex; gap: 12px; justify-content: flex-end;">

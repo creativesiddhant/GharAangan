@@ -466,6 +466,42 @@ body {
     line-height: 1.2;
 }
 
+/* Payment KPI breakdown pills */
+.payment-kpi-breakdown {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.pay-tag {
+    font-size: 0.72rem;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.pay-tag.tag-done {
+    background-color: rgba(46, 204, 113, 0.12);
+    color: #1b6b2f;
+    border: 1px solid rgba(46, 204, 113, 0.3);
+}
+
+.pay-tag.tag-pending {
+    background-color: rgba(212, 175, 55, 0.15);
+    color: #9c6c00;
+    border: 1px solid rgba(212, 175, 55, 0.35);
+}
+
+.pay-tag.tag-cancelled {
+    background-color: rgba(217, 83, 79, 0.12);
+    color: #c0392b;
+    border: 1px solid rgba(217, 83, 79, 0.3);
+}
+
 /* Charts Grid */
 .charts-section {
     display: flex;
@@ -553,6 +589,34 @@ body {
     align-items: center;
     gap: 16px;
     flex-wrap: wrap;
+}
+
+/* Payment Status Filter styling */
+.filter-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.payment-filter-select {
+    background-color: var(--bg-cream-dark);
+    border: 1px solid rgba(43, 30, 23, 0.12);
+    padding: 10px 16px;
+    border-radius: 30px;
+    font-family: var(--font-sans);
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    outline: none;
+}
+
+.payment-filter-select:hover,
+.payment-filter-select:focus {
+    border-color: var(--primary-green);
+    background-color: var(--white);
+    box-shadow: 0 0 0 3px rgba(30, 63, 32, 0.08);
 }
 
 /* Search bar styling */
@@ -644,6 +708,92 @@ tr:hover td {
     font-weight: 600;
     font-size: 0.85rem;
     display: inline-block;
+}
+
+/* Interactive Payment Status Select Dropdown in Table */
+.payment-status-wrapper {
+    display: inline-block;
+    position: relative;
+}
+
+.payment-status-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    padding: 6px 28px 6px 12px;
+    border-radius: 20px;
+    font-family: var(--font-sans);
+    font-size: 0.82rem;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    border: 1.5px solid transparent;
+    outline: none;
+    background-repeat: no-repeat;
+    background-position: right 9px center;
+    background-size: 9px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+/* Dropdown color themes & arrow indicators */
+.payment-status-select.status-done {
+    background-color: #EBF7EE;
+    color: #1B6B2F;
+    border-color: rgba(46, 204, 113, 0.4);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231B6B2F'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+}
+
+.payment-status-select.status-done:hover,
+.payment-status-select.status-done:focus {
+    background-color: #DEF3E3;
+    border-color: #27AE60;
+    box-shadow: 0 2px 8px rgba(39, 174, 96, 0.2);
+}
+
+.payment-status-select.status-pending {
+    background-color: #FFF8E7;
+    color: #9C6C00;
+    border-color: rgba(212, 175, 55, 0.45);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%239C6C00'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+}
+
+.payment-status-select.status-pending:hover,
+.payment-status-select.status-pending:focus {
+    background-color: #FEF0D0;
+    border-color: #D4AF37;
+    box-shadow: 0 2px 8px rgba(212, 175, 55, 0.25);
+}
+
+.payment-status-select.status-cancelled {
+    background-color: #FDF0F0;
+    color: #C0392B;
+    border-color: rgba(217, 83, 79, 0.4);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23C0392B'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+}
+
+.payment-status-select.status-cancelled:hover,
+.payment-status-select.status-cancelled:focus {
+    background-color: #FCE1E1;
+    border-color: #E74C3C;
+    box-shadow: 0 2px 8px rgba(231, 76, 60, 0.2);
+}
+
+.payment-status-select.status-updating {
+    opacity: 0.6;
+    pointer-events: none;
+    cursor: wait;
+    filter: grayscale(0.5);
+}
+
+.payment-status-select.status-updated-flash {
+    animation: statusPulse 0.8s ease;
+}
+
+@keyframes statusPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.08); box-shadow: 0 0 12px rgba(46, 204, 113, 0.5); }
+    100% { transform: scale(1); }
 }
 
 .btn-dial {
@@ -830,6 +980,14 @@ tr:hover td {
     }
     
     .search-box input:focus {
+        width: 100%;
+    }
+
+    .filter-box {
+        width: 100%;
+    }
+
+    .payment-filter-select {
         width: 100%;
     }
     
