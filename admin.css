@@ -1181,3 +1181,106 @@ tr:hover td {
         gap: 0;
     }
 }
+
+/* ==========================================================================
+   Modern Toast Notifications
+   ========================================================================== */
+.admin-toast-container {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 99999;
+    pointer-events: none;
+    max-width: 90vw;
+}
+
+.admin-toast {
+    display: flex;
+    align-items: center;
+    padding: 12px 20px;
+    border-radius: 30px;
+    background-color: var(--white);
+    color: var(--text-dark);
+    box-shadow: 0 10px 30px rgba(43, 30, 23, 0.18);
+    border: 1.5px solid rgba(212, 175, 55, 0.25);
+    font-family: var(--font-sans);
+    font-size: 0.9rem;
+    font-weight: 500;
+    pointer-events: auto;
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.admin-toast.show {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.toast-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.toast-content i {
+    font-size: 1.1rem;
+}
+
+.toast-success {
+    background-color: #EBF7EE;
+    border-color: #2ECC71;
+    color: #1B6B2F;
+}
+
+.toast-success i {
+    color: #27AE60;
+}
+
+.toast-info {
+    background-color: #FFF8E7;
+    border-color: #F1C40F;
+    color: #9C6C00;
+}
+
+.toast-info i {
+    color: #E6A23C;
+}
+
+.toast-danger {
+    background-color: #FDF0F0;
+    border-color: #E74C3C;
+    color: #C0392B;
+}
+
+.toast-danger i {
+    color: #C0392B;
+}
+
+.toast-warning {
+    background-color: #FFFDF0;
+    border-color: #F39C12;
+    color: #8A6D3B;
+}
+
+.toast-warning i {
+    color: #F39C12;
+}
+
+@media (max-width: 480px) {
+    .admin-toast-container {
+        bottom: 16px;
+        right: 16px;
+        left: 16px;
+    }
+    
+    .admin-toast {
+        width: 100%;
+        justify-content: center;
+        padding: 10px 16px;
+        font-size: 0.82rem;
+    }
+}
