@@ -4559,19 +4559,40 @@ if (manualBookingForm) {
             }
             
             // Insert new booking
-            const { data, error } = await supabaseClient
+            const basePayload = { 
+                full_name: fullName, 
+                mobile_number: mobileNumber, 
+                quantity: quantity, 
+                city: cityVal, 
+                state: stateVal
+            };
+
+            let data = null;
+            let error = null;
+
+            // Try inserting with payment_status first; fallback to standard payload if column doesn't exist in DB
+            const tryInsert = await supabaseClient
                 .from('prebookings')
                 .insert([
                     { 
-                        full_name: fullName, 
-                        mobile_number: mobileNumber, 
-                        quantity: quantity, 
-                        city: cityVal, 
-                        state: stateVal,
+                        ...basePayload,
                         payment_status: paymentStatus
                     }
                 ])
                 .select();
+
+            if (tryInsert.error && tryInsert.error.message && tryInsert.error.message.toLowerCase().includes('payment_status')) {
+                console.warn('[ManualBooking] payment_status column not in DB schema cache. Falling back to standard columns.');
+                const fallbackInsert = await supabaseClient
+                    .from('prebookings')
+                    .insert([basePayload])
+                    .select();
+                data = fallbackInsert.data;
+                error = fallbackInsert.error;
+            } else {
+                data = tryInsert.data;
+                error = tryInsert.error;
+            }
                 
             console.log('[ManualBooking] Insert response:', { data, error });
 
@@ -4593,12 +4614,19 @@ if (manualBookingForm) {
                 // Success: Close modal and show success alert
                 closeManualBookingModal();
                 
+                // Save payment status locally if new booking was created
+                if (data && data.length > 0 && data[0].id) {
+                    setSavedPaymentStatus(data[0].id, paymentStatus);
+                }
+
                 // If real-time did not update (e.g. not connected), we manually reload
                 let addedLocally = false;
                 if (data && data.length > 0) {
                     const alreadyExists = bookingsData.some(b => b.id === data[0].id);
                     if (!alreadyExists) {
-                        bookingsData.unshift(sanitizeBooking(data[0]));
+                        const newBooking = sanitizeBooking(data[0]);
+                        newBooking.payment_status = paymentStatus;
+                        bookingsData.unshift(newBooking);
                         updateDashboardView();
                         addedLocally = true;
                     }
@@ -4809,18 +4837,40 @@ if (editBookingForm) {
                 return;
             }
 
-            const { data, error } = await supabaseClient
+            const baseUpdatePayload = {
+                full_name: fullName,
+                mobile_number: mobileNumber,
+                city: city,
+                state: state,
+                quantity: quantity
+            };
+
+            let data = null;
+            let error = null;
+
+            // Try updating with payment_status first; fallback to standard payload if DB column doesn't exist
+            const tryUpdate = await supabaseClient
                 .from('prebookings')
                 .update({
-                    full_name: fullName,
-                    mobile_number: mobileNumber,
-                    city: city,
-                    state: state,
-                    quantity: quantity,
+                    ...baseUpdatePayload,
                     payment_status: paymentStatus
                 })
                 .eq('id', id)
                 .select();
+
+            if (tryUpdate.error && tryUpdate.error.message && tryUpdate.error.message.toLowerCase().includes('payment_status')) {
+                console.warn('[EditBooking] payment_status column not in DB schema cache. Updating standard columns.');
+                const fallbackUpdate = await supabaseClient
+                    .from('prebookings')
+                    .update(baseUpdatePayload)
+                    .eq('id', id)
+                    .select();
+                data = fallbackUpdate.data;
+                error = fallbackUpdate.error;
+            } else {
+                data = tryUpdate.data;
+                error = tryUpdate.error;
+            }
 
             console.log('[EditBooking] Update response:', { data, error });
 
@@ -4838,14 +4888,13 @@ if (editBookingForm) {
             }
 
             if (error) {
-                console.warn('Error updating booking in DB:', error.message);
-                updateDashboardView();
-                closeEditBookingModal();
-                showToast('Booking updated locally (Note: DB column sync issue)', 'warning');
+                console.error('Error updating booking in DB:', error.message);
+                alert('Failed to update booking: ' + error.message);
             } else {
                 // Update locally
                 const updatedRow = sanitizeBooking(data && data[0]);
                 if (updatedRow) {
+                    updatedRow.payment_status = paymentStatus;
                     const idx = bookingsData.findIndex(b => String(b.id) === String(id));
                     if (idx !== -1) {
                         bookingsData[idx] = updatedRow;
