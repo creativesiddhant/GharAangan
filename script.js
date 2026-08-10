@@ -3588,6 +3588,35 @@ function initRecentBookingsNotifications() {
         return str;
     }
 
+    // Group consecutive/duplicate bookings from same customer & product to show aggregate message (e.g., "ordered 5 times back to back")
+    function groupBookings(rawList) {
+        if (!rawList || rawList.length === 0) return [];
+        const grouped = [];
+        
+        for (const item of rawList) {
+            const firstName = (item.first_name || item.name || "Someone").trim();
+            const qty = cleanQuantity(item.quantity);
+            const cityVal = (item.city || '').trim();
+            
+            // Check if matches the previous grouped entry (consecutive run)
+            const prev = grouped.length > 0 ? grouped[grouped.length - 1] : null;
+            if (prev && 
+                prev.name.toLowerCase() === firstName.toLowerCase() && 
+                prev.quantity.toLowerCase() === qty.toLowerCase() && 
+                prev.city.toLowerCase() === cityVal.toLowerCase()) {
+                prev.count = (prev.count || 1) + 1;
+            } else {
+                grouped.push({
+                    name: firstName,
+                    quantity: qty,
+                    city: cityVal,
+                    count: 1
+                });
+            }
+        }
+        return grouped;
+    }
+
     let currentPoolIndex = 0;
 
     // Load recent actual bookings from Supabase database to dynamically include real names/quantities
@@ -3598,12 +3627,12 @@ function initRecentBookingsNotifications() {
             return;
         }
         try {
-            console.log('[RecentBookings] Fetching last 12 pre-bookings...');
+            console.log('[RecentBookings] Fetching recent pre-bookings...');
             let { data, error } = await supabaseClient
                 .from('safe_recent_bookings')
                 .select('first_name, quantity, created_at, city')
                 .order('created_at', { ascending: false })
-                .limit(12);
+                .limit(30);
 
             // If the view does not exist or fails (e.g. lacks city column), fallback to querying prebookings table directly
             if (error) {
@@ -3612,7 +3641,7 @@ function initRecentBookingsNotifications() {
                     .from('prebookings')
                     .select('full_name, quantity, created_at, city')
                     .order('created_at', { ascending: false })
-                    .limit(12);
+                    .limit(30);
                 
                 if (directRes.data) {
                     data = directRes.data.map(b => ({
@@ -3627,13 +3656,13 @@ function initRecentBookingsNotifications() {
             }
 
             if (data && data.length > 0) {
-                bookingsPool = data.map(b => {
-                    const firstName = b.first_name || "Someone";
-                    const qty = cleanQuantity(b.quantity);
-                    const cityVal = b.city ? b.city.trim() : '';
-                    return { name: firstName, quantity: qty, city: cityVal };
-                });
-                console.log(`[RecentBookings] Successfully loaded ${bookingsPool.length} bookings to rotate:`, bookingsPool);
+                const rawMapped = data.map(b => ({
+                    name: b.first_name || "Someone",
+                    quantity: b.quantity,
+                    city: b.city ? b.city.trim() : ''
+                }));
+                bookingsPool = groupBookings(rawMapped);
+                console.log(`[RecentBookings] Successfully loaded & grouped ${bookingsPool.length} distinct notifications to rotate:`, bookingsPool);
             } else {
                 console.log('[RecentBookings] Database table/view is empty. No historic bookings found.');
             }
@@ -3657,17 +3686,28 @@ function initRecentBookingsNotifications() {
             closeToast(false);
         }
 
+        const isMulti = booking.count && booking.count > 1;
         const toast = document.createElement('div');
-        toast.className = 'booking-toast';
+        toast.className = 'booking-toast' + (isMulti ? ' multi-order' : '');
         
         const locationPhrase = booking.city ? ` from <strong>${escapeHtml(booking.city)}</strong>` : '';
         
+        let messageHtml = '';
+        let iconHtml = '<i class="fa-solid fa-check"></i>';
+
+        if (isMulti) {
+            iconHtml = '<i class="fa-solid fa-fire-flame-curved"></i>';
+            messageHtml = `<strong>${escapeHtml(booking.name)}</strong>${locationPhrase} ordered <strong>${booking.count} times back to back</strong> our <strong>${escapeHtml(booking.quantity)}</strong>! 🔥`;
+        } else {
+            messageHtml = `<strong>${escapeHtml(booking.name)}</strong>${locationPhrase} recently booked <strong>${escapeHtml(booking.quantity)}</strong>.`;
+        }
+        
         toast.innerHTML = `
             <div class="booking-toast-icon">
-                <i class="fa-solid fa-check"></i>
+                ${iconHtml}
             </div>
             <div class="booking-toast-content">
-                <strong>${escapeHtml(booking.name)}</strong>${locationPhrase} recently booked <strong>${booking.quantity}</strong>.
+                ${messageHtml}
             </div>
             <button class="booking-toast-close" title="Close Notification">
                 <i class="fa-solid fa-xmark"></i>
@@ -3685,8 +3725,9 @@ function initRecentBookingsNotifications() {
         const closeBtn = toast.querySelector('.booking-toast-close');
         closeBtn.addEventListener('click', () => closeToast(true));
 
-        // Auto fade out timer (4 seconds display time)
-        toastTimeout = setTimeout(() => closeToast(true), 4000);
+        // Auto fade out timer (4 seconds display time, 5.5s for multi-orders to give time to read)
+        const displayDuration = isMulti ? 5500 : 4000;
+        toastTimeout = setTimeout(() => closeToast(true), displayDuration);
 
         // Helper to close current toast with cooldown logic
         function closeToast(withCooldown = true) {
@@ -3739,15 +3780,30 @@ function initRecentBookingsNotifications() {
     // Formats and queues a brand new pre-booking
     function handleNewBookingNotification(dbBooking) {
         const fullName = dbBooking.full_name || "Someone";
-        const firstName = fullName.split(' ')[0];
+        const firstName = fullName.split(' ')[0].trim();
         const qty = cleanQuantity(dbBooking.quantity);
-        const newBooking = { name: firstName, quantity: qty, city: dbBooking.city ? dbBooking.city.trim() : '' };
-        
-        // Push to real-time display queue
-        newBookingsQueue.push(newBooking);
+        const cityVal = dbBooking.city ? dbBooking.city.trim() : '';
 
-        // Prepend to pool so it rotates in later
-        bookingsPool.unshift(newBooking);
+        // Check if there is an existing pending notification in newBookingsQueue for same user + product
+        const lastInQueue = newBookingsQueue.length > 0 ? newBookingsQueue[newBookingsQueue.length - 1] : null;
+        const topInPool = bookingsPool.length > 0 ? bookingsPool[0] : null;
+
+        if (lastInQueue && 
+            lastInQueue.name.toLowerCase() === firstName.toLowerCase() && 
+            lastInQueue.quantity.toLowerCase() === qty.toLowerCase() &&
+            lastInQueue.city.toLowerCase() === cityVal.toLowerCase()) {
+            lastInQueue.count = (lastInQueue.count || 1) + 1;
+        } else if (topInPool && 
+            topInPool.name.toLowerCase() === firstName.toLowerCase() && 
+            topInPool.quantity.toLowerCase() === qty.toLowerCase() &&
+            topInPool.city.toLowerCase() === cityVal.toLowerCase()) {
+            topInPool.count = (topInPool.count || 1) + 1;
+            newBookingsQueue.push({ ...topInPool });
+        } else {
+            const newBooking = { name: firstName, quantity: qty, city: cityVal, count: 1 };
+            newBookingsQueue.push(newBooking);
+            bookingsPool.unshift(newBooking);
+        }
 
         // Trigger next display check
         showNextNotification();

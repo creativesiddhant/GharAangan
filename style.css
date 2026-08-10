@@ -1980,6 +1980,18 @@ p {
     opacity: 1;
 }
 
+.booking-toast.multi-order {
+    border-color: rgba(245, 158, 11, 0.65);
+    background: linear-gradient(135deg, rgba(30, 63, 32, 0.95), rgba(45, 78, 48, 0.95));
+    box-shadow: 0 12px 30px rgba(245, 158, 11, 0.22), 0 0 18px rgba(245, 158, 11, 0.15);
+}
+
+.booking-toast.multi-order .booking-toast-icon {
+    background: rgba(245, 158, 11, 0.2);
+    border-color: rgba(245, 158, 11, 0.5);
+    color: #f59e0b;
+}
+
 .booking-toast-icon {
     display: flex;
     align-items: center;
