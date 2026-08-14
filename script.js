@@ -3055,8 +3055,8 @@ document.addEventListener('DOMContentLoaded', () => {
    0. Launch Celebration Confetti
    ========================================================================== */
 function initLaunchCelebration() {
-    // Indian national tricolor colors (Saffron Orange, White, Green, Navy Blue)
-    const brandColors = ['#FF9933', '#FFFFFF', '#138808', '#000080'];
+    // Indian national tricolor colors (Saffron Orange, White, Green)
+    const brandColors = ['#FF9933', '#FFFFFF', '#138808'];
 
     // Wait 1 second after page load for maximum visual impact
     setTimeout(() => {
