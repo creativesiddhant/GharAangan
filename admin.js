@@ -4931,8 +4931,8 @@ bindStateCityAutocomplete(
    Launch Celebration Confetti
    ========================================================================== */
 function initLaunchCelebration() {
-    // Colors matching Ghar Aangan branding (Forest Green, Gold, Cream)
-    const brandColors = ['#D4AF37', '#1E3F20', '#FAF7F0', '#E6C65E', '#2D5E30'];
+    // Indian national tricolor colors (Saffron Orange, White, Green, Navy Blue)
+    const brandColors = ['#FF9933', '#FFFFFF', '#138808', '#000080'];
 
     // Wait 1 second after page load for maximum visual impact
     setTimeout(() => {

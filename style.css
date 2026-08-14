@@ -8,14 +8,15 @@
 :root {
     --bg-cream: #FAF7F0;
     --bg-cream-dark: #F5EFE6;
-    --primary-green: #1E3F20;
-    --primary-green-light: #2D5E30;
-    --gold: #D4AF37;
-    --gold-light: #E6C65E;
-    --gold-dark: #B3912B;
-    --text-dark: #2B1E17;
-    --text-muted: #5C4B3E;
+    --primary-green: #138808; /* Indian Flag Green */
+    --primary-green-light: #169e0a;
+    --gold: #FF9933; /* Saffron Orange */
+    --gold-light: #FFAE59;
+    --gold-dark: #CC6600;
+    --text-dark: #1E232A;
+    --text-muted: #4B5563;
     --white: #FFFFFF;
+    --ashoka-blue: #000080;
     
     --font-serif: 'Playfair Display', Georgia, serif;
     --font-sans: 'Outfit', 'Inter', sans-serif;
@@ -2378,8 +2379,8 @@ p {
    11. We Are Launched - Launch & Shopify Redirect Styles
    ========================================================================== */
 .top-announcement-bar {
-    background: linear-gradient(90deg, #1f2937, #111827);
-    border-bottom: 2px solid var(--gold);
+    background: #000080; /* Ashoka Navy Blue */
+    border-bottom: 3px solid var(--gold); /* Saffron Orange */
     color: var(--white);
     padding: 10px 20px;
     font-size: 0.88rem;
