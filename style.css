@@ -2356,6 +2356,17 @@ p {
     text-shadow: 0 0 10px rgba(212, 175, 55, 0.6); /* Gold text glow effect */
 }
 
+@media (max-width: 576px) {
+    .price-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 6px;
+    }
+    .price-amount {
+        font-size: 1.15rem;
+    }
+}
+
 .price-disclaimer {
     font-size: 0.88rem;
     color: rgba(250, 247, 240, 0.85); /* Highly visible light cream text */
