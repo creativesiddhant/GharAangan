@@ -4045,33 +4045,33 @@ function initPopupForm() {
    10. Pre-booking Price Preview Logic
    ========================================================================== */
 function initPricePreview() {
-    // Launch standard pricing list (25% discount ended)
+    // Launch standard pricing list (Pre-order ended, GST & Shipping extra)
     const prices = {
-        'A2 Desi Pahadi Ghee (500ml)': '₹750',
-        'A2 Desi Pahadi Ghee (550ml)': '₹750',
-        'A2 Desi Pahadi Ghee (1L)': '₹1,501',
-        'A2 Desi Pahadi Ghee (2L)': '₹3,001',
-        'A2 Desi Pahadi Ghee (5L)': '₹7,505',
-        'Pahadi Pisyu Bhaang Loon (200g)': '₹199',
-        'Pahadi Pisyu Chatpata Laal Mirch Loon (200g)': '₹199',
-        'Pahadi Pisyu Mix Seasoning Loon (200g)': '₹199',
-        'Pahadi Gud (400g)': '₹199',
-        'Pahadi Saunf Gud (400g)': '₹199',
-        'Pahadi Dry Fruits Gud (400g)': '₹399',
-        'Pahadi Dry Fruits Gud (1kg)': '₹699',
-        'Pahadi Kaju Gud (400g)': '₹250',
-        'Pahadi Badam Gud (400g)': '₹250',
-        'Pahadi Kismis Gud (400g)': '₹199',
-        'Pahadi Seeds Gud (400g)': '₹199',
-        'Pahadi Rajma (500g)': '₹200',
-        'Pahadi Black Soyabean (500g)': '₹200',
-        'Pahadi Gauhat Ki Dal (500g)': '₹200',
-        'Pahadi Lobia Dal (500g)': '₹200',
-        'Pahadi Buransh Juice (500ml)': '₹499',
-        'Pahadi Amla Juice (500ml)': '₹499',
-        'Pahadi Orange Juice (500ml)': '₹399',
-        'Original Pahadi Mandua Ka Aata (1kg)': '₹200',
-        'Original Pahadi Mandua Ka Aata (5kg)': '₹899'
+        'A2 Desi Pahadi Ghee (500ml)': '₹799 + GST + Shipping',
+        'A2 Desi Pahadi Ghee (550ml)': '₹799 + GST + Shipping',
+        'A2 Desi Pahadi Ghee (1L)': '₹1,599 + GST + Shipping',
+        'A2 Desi Pahadi Ghee (2L)': '₹3,198 + GST + Shipping',
+        'A2 Desi Pahadi Ghee (5L)': '₹7,995 + GST + Shipping',
+        'Pahadi Pisyu Bhaang Loon (200g)': '₹199 + GST + Shipping',
+        'Pahadi Pisyu Chatpata Laal Mirch Loon (200g)': '₹199 + GST + Shipping',
+        'Pahadi Pisyu Mix Seasoning Loon (200g)': '₹199 + GST + Shipping',
+        'Pahadi Gud (400g)': '₹199 + GST + Shipping',
+        'Pahadi Saunf Gud (400g)': '₹199 + GST + Shipping',
+        'Pahadi Dry Fruits Gud (400g)': '₹399 + GST + Shipping',
+        'Pahadi Dry Fruits Gud (1kg)': '₹699 + GST + Shipping',
+        'Pahadi Kaju Gud (400g)': '₹250 + GST + Shipping',
+        'Pahadi Badam Gud (400g)': '₹250 + GST + Shipping',
+        'Pahadi Kismis Gud (400g)': '₹199 + GST + Shipping',
+        'Pahadi Seeds Gud (400g)': '₹199 + GST + Shipping',
+        'Pahadi Rajma (500g)': '₹200 + GST + Shipping',
+        'Pahadi Black Soyabean (500g)': '₹200 + GST + Shipping',
+        'Pahadi Gauhat Ki Dal (500g)': '₹200 + GST + Shipping',
+        'Pahadi Lobia Dal (500g)': '₹200 + GST + Shipping',
+        'Pahadi Buransh Juice (500ml)': '₹499 + GST + Shipping',
+        'Pahadi Amla Juice (500ml)': '₹499 + GST + Shipping',
+        'Pahadi Orange Juice (500ml)': '₹399 + GST + Shipping',
+        'Original Pahadi Mandua Ka Aata (1kg)': '₹200 + GST + Shipping',
+        'Original Pahadi Mandua Ka Aata (5kg)': '₹899 + GST + Shipping'
     };
 
     document.addEventListener('change', (e) => {
