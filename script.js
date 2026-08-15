@@ -3055,8 +3055,8 @@ document.addEventListener('DOMContentLoaded', () => {
    0. Launch Celebration Confetti
    ========================================================================== */
 function initLaunchCelebration() {
-    // Indian national tricolor colors (Saffron Orange, White, Green)
-    const brandColors = ['#FF9933', '#FFFFFF', '#138808'];
+    // Colors matching Ghar Aangan branding (Forest Green, Gold, Cream)
+    const brandColors = ['#D4AF37', '#1E3F20', '#FAF7F0', '#E6C65E', '#2D5E30'];
 
     // Wait 1 second after page load for maximum visual impact
     setTimeout(() => {

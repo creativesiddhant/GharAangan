@@ -16,7 +16,6 @@
     --text-dark: #2B1E17;
     --text-muted: #5C4B3E;
     --white: #FFFFFF;
-    --ashoka-blue: #000080;
     
     --font-serif: 'Playfair Display', Georgia, serif;
     --font-sans: 'Outfit', 'Inter', sans-serif;
@@ -2390,8 +2389,8 @@ p {
    11. We Are Launched - Launch & Shopify Redirect Styles
    ========================================================================== */
 .top-announcement-bar {
-    background: #000080; /* Ashoka Navy Blue */
-    border-bottom: 3px solid var(--gold); /* Saffron Orange */
+    background: linear-gradient(90deg, #1f2937, #111827);
+    border-bottom: 2px solid var(--gold);
     color: var(--white);
     padding: 10px 20px;
     font-size: 0.88rem;
