@@ -291,6 +291,7 @@ body {
     font-size: 1.4rem;
     font-weight: 700;
     color: var(--primary-green);
+    white-space: nowrap;
 }
 
 .brand-text span {
@@ -299,6 +300,7 @@ body {
     text-transform: uppercase;
     letter-spacing: 1px;
     color: var(--gold-dark);
+    white-space: nowrap;
 }
 
 .admin-user-controls {
@@ -880,7 +882,7 @@ tr:hover td {
 }
 
 /* Mobile Screens */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     body {
         background-color: var(--bg-cream); /* Solid background for mobile */
     }

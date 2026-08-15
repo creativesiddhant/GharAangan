@@ -261,6 +261,7 @@ p {
     font-weight: 700;
     font-size: 1.6rem;
     color: var(--primary-green);
+    white-space: nowrap;
 }
 
 .nav-menu {
@@ -1778,7 +1779,7 @@ p {
 }
 
 /* Mobile Devices */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     .header {
         padding: 10px 0;
     }
@@ -2061,7 +2062,7 @@ p {
 }
 
 /* Responsive adjustments to place it above the sticky bottom CTA on mobile */
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     .booking-toast-container {
         bottom: 90px; /* Sits elegantly above the mobile sticky CTA bar */
         left: 16px;
@@ -2166,7 +2167,7 @@ p {
     color: var(--primary-green);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     .policy-page {
         padding: 40px 0 80px;
     }
@@ -2191,7 +2192,7 @@ p {
     gap: 32px;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     .policy-header .navbar {
         flex-direction: row !important;
         justify-content: space-between !important;

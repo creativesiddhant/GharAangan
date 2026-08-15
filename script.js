@@ -3420,7 +3420,7 @@ function initMobileCtaScroll() {
 
     window.addEventListener('scroll', () => {
         // Only trigger on mobile viewports
-        if (window.innerWidth > 768) {
+        if (window.innerWidth > 1024) {
             ctaBar.classList.remove('active');
             return;
         }
@@ -3512,7 +3512,7 @@ async function logVisit() {
    ========================================================================== */
 function initMobilePrebookScroll() {
     function scrollToForm(smooth = true) {
-        const isMobile = window.innerWidth <= 768;
+        const isMobile = window.innerWidth <= 1024;
         if (isMobile) {
             const targetForm = document.getElementById('prebook-form');
             if (targetForm) {
@@ -3524,7 +3524,7 @@ function initMobilePrebookScroll() {
     // 1. Intercept link clicks on mobile
     document.querySelectorAll('a[href="#prebook"]').forEach(anchor => {
         anchor.addEventListener('click', function(e) {
-            const isMobile = window.innerWidth <= 768;
+            const isMobile = window.innerWidth <= 1024;
             if (isMobile) {
                 e.preventDefault();
                 scrollToForm(true);
