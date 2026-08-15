@@ -4148,7 +4148,7 @@ function triggerRealtimeBanner() {
    ========================================================================== */
 exportCsvBtn.addEventListener('click', () => {
     if (bookingsData.length === 0) {
-        alert('No bookings available to export.');
+        showToast('No bookings available to export.', 'info');
         return;
     }
 
@@ -4314,7 +4314,7 @@ window.deleteBooking = async function(id) {
 
                 if (error) {
                     console.error('Error deleting booking:', error.message);
-                    alert('Failed to delete booking: ' + error.message);
+                    showToast('Failed to delete booking: ' + error.message, 'danger');
                 } else {
                     // Delete locally from bookingsData array to trigger instant UI refresh
                     bookingsData = bookingsData.filter(booking => booking.id !== id);
@@ -4322,7 +4322,7 @@ window.deleteBooking = async function(id) {
                 }
             } catch (err) {
                 console.error('Delete exception:', err);
-                alert('An unexpected error occurred while deleting.');
+                showToast('An unexpected error occurred while deleting.', 'danger');
             }
         }
     );
@@ -4400,16 +4400,16 @@ if (clearVisitsBtn) {
 
                     if (error) {
                         console.error('Error clearing visits:', error.message);
-                        alert('Failed to clear visitor logs: ' + error.message);
+                        showToast('Failed to clear visitor logs: ' + error.message, 'danger');
                     } else {
                         visitsData = [];
                         // Re-fetch to ensure the RPC total count is maintained and view is updated
                         fetchVisits();
-                        alert('Visitor logs cleared successfully.');
+                        showToast('Visitor logs cleared successfully! 🧹', 'success');
                     }
                 } catch (err) {
                     console.error('Clear visits exception:', err);
-                    alert('An unexpected error occurred while clearing visitor logs.');
+                    showToast('An unexpected error occurred while clearing visitor logs.', 'danger');
                 }
             }
         );
@@ -4553,7 +4553,7 @@ if (manualBookingForm) {
         
         try {
             if (!supabaseClient) {
-                alert('Supabase client is not initialized.');
+                showToast('Supabase client is not initialized.', 'danger');
                 resetManualForm();
                 return;
             }
@@ -4598,7 +4598,7 @@ if (manualBookingForm) {
 
             if (error) {
                 console.error('Error inserting manual booking:', error.message);
-                alert('Failed to add pre-booking: ' + error.message);
+                showToast('Failed to add pre-booking: ' + error.message, 'danger');
                 
                 // Restore button state
                 if (submitManualBookingBtn) {
@@ -4636,11 +4636,11 @@ if (manualBookingForm) {
                     await fetchBookings();
                 }
                 
-                alert('Booking successfully recorded!');
+                showToast('Booking successfully recorded! 🎉', 'success');
             }
         } catch (err) {
             console.error('Insert manual booking exception:', err);
-            alert('An unexpected error occurred while adding manual booking.');
+            showToast('An unexpected error occurred while adding manual booking.', 'danger');
             
             // Restore button state
             if (submitManualBookingBtn) {
@@ -4832,7 +4832,7 @@ if (editBookingForm) {
 
         try {
             if (!supabaseClient) {
-                alert('Supabase client is not initialized.');
+                showToast('Supabase client is not initialized.', 'danger');
                 closeEditBookingModal();
                 return;
             }
@@ -4889,7 +4889,7 @@ if (editBookingForm) {
 
             if (error) {
                 console.error('Error updating booking in DB:', error.message);
-                alert('Failed to update booking: ' + error.message);
+                showToast('Failed to update booking: ' + error.message, 'danger');
             } else {
                 // Update locally
                 const updatedRow = sanitizeBooking(data && data[0]);
@@ -4906,7 +4906,7 @@ if (editBookingForm) {
             }
         } catch (err) {
             console.error('Update exception:', err);
-            alert('An unexpected error occurred while saving changes.');
+            showToast('An unexpected error occurred while saving changes.', 'danger');
         } finally {
             if (submitEditBookingBtn) submitEditBookingBtn.disabled = false;
             if (editSubmitBtnText) editSubmitBtnText.classList.remove('hidden');
