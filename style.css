@@ -1000,8 +1000,10 @@ p {
     font-size: 0.88rem;
     display: flex;
     justify-content: space-between;
+    align-items: baseline;
     margin-bottom: 8px;
     color: var(--text-dark);
+    gap: 12px;
 }
 
 .pricing-category-group ul li:last-child {
@@ -1015,6 +1017,26 @@ p {
 .pricing-category-group ul li strong {
     color: var(--primary-green);
     font-weight: 600;
+    white-space: nowrap;
+    display: inline-flex;
+    align-items: baseline;
+}
+
+.price-suffix {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    margin-left: 4px;
+    opacity: 0.8;
+}
+
+@media (max-width: 576px) {
+    .pricing-category-group ul li {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+        margin-bottom: 12px;
+    }
 }
 
 /* Pre-Book Form Section */
