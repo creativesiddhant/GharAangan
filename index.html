@@ -119,15 +119,19 @@
             <div class="hero-media-wrapper animate-zoom-in">
                 <div class="media-glow-effect"></div>
                 <div class="hero-media-container">
-                    <div class="hero-ghee-package hero-video-package">
+                    <div class="hero-ghee-package hero-video-package" style="position: relative;">
                         <iframe 
-                            src="https://www.youtube.com/embed/jLSVeNXRaRs?autoplay=1&mute=1&loop=1&playlist=jLSVeNXRaRs&controls=0&modestbranding=1&rel=0&playsinline=1" 
+                            id="hero-video"
+                            src="https://www.youtube.com/embed/jLSVeNXRaRs?autoplay=1&mute=1&loop=1&playlist=jLSVeNXRaRs&controls=0&modestbranding=1&rel=0&playsinline=1&enablejsapi=1" 
                             title="Ghar Aangan Pure A2 Bilona Cow Ghee" 
                             frameborder="0" 
                             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
                             allowfullscreen
                             class="hero-video-iframe">
                         </iframe>
+                        <button id="video-sound-toggle" class="sound-toggle-btn" aria-label="Toggle Sound">
+                            <i class="fa-solid fa-volume-xmark"></i>
+                        </button>
                     </div>
                     <!-- FSSAI Hero Badge -->
                     <div class="hero-fssai-badge">
@@ -802,6 +806,8 @@
     <!-- Supabase Client CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <!-- YouTube IFrame Player API -->
+    <script src="https://www.youtube.com/iframe_api"></script>
     <script src="script.js"></script>
 </body>
 </html>

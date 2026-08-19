@@ -4096,3 +4096,45 @@ function initPricePreview() {
     });
 }
 
+/* ==========================================================================
+   11. YouTube Video Sound Toggle and Player API Integration
+   ========================================================================== */
+let ytPlayer = null;
+
+function onPlayerReady(event) {
+    const soundToggle = document.getElementById('video-sound-toggle');
+    if (!soundToggle) return;
+    
+    soundToggle.addEventListener('click', function() {
+        if (!ytPlayer) return;
+        try {
+            if (ytPlayer.isMuted()) {
+                ytPlayer.unMute();
+                soundToggle.innerHTML = '<i class="fa-solid fa-volume-high"></i>';
+                soundToggle.classList.add('unmuted');
+            } else {
+                ytPlayer.mute();
+                soundToggle.innerHTML = '<i class="fa-solid fa-volume-xmark"></i>';
+                soundToggle.classList.remove('unmuted');
+            }
+        } catch (e) {
+            console.error("Error toggling YouTube sound:", e);
+        }
+    });
+}
+
+// Global callback for YouTube API
+window.onYouTubeIframeAPIReady = function() {
+    ytPlayer = new YT.Player('hero-video', {
+        events: {
+            'onReady': onPlayerReady
+        }
+    });
+};
+
+// Fallback in case the YouTube script finishes loading before script.js executes
+if (typeof YT !== 'undefined' && YT.Player) {
+    window.onYouTubeIframeAPIReady();
+}
+
+
