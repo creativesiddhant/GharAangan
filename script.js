@@ -4105,6 +4105,31 @@ function onPlayerReady(event) {
     const soundToggle = document.getElementById('video-sound-toggle');
     if (!soundToggle) return;
     
+    // Ensure player is unmuted and playing by default
+    try {
+        ytPlayer.unMute();
+        ytPlayer.playVideo();
+    } catch (e) {
+        console.error("Initial unmute/play error:", e);
+    }
+    
+    // Check if autoplay unmuted was blocked by the browser's audio policy
+    setTimeout(() => {
+        if (!ytPlayer) return;
+        try {
+            // Get player state: 1 = Playing. If not playing, browser blocked unmuted autoplay.
+            if (ytPlayer.getPlayerState() !== 1) {
+                console.log("Unmuted autoplay blocked. Falling back to muted autoplay.");
+                ytPlayer.mute();
+                ytPlayer.playVideo();
+                soundToggle.innerHTML = '<i class="fa-solid fa-volume-xmark"></i>';
+                soundToggle.classList.remove('unmuted');
+            }
+        } catch (err) {
+            console.error("Autoplay verification error:", err);
+        }
+    }, 1500);
+    
     soundToggle.addEventListener('click', function() {
         if (!ytPlayer) return;
         try {
