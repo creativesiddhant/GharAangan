@@ -4154,9 +4154,9 @@ exportCsvBtn.addEventListener('click', () => {
 
     // Shopify Customer CSV Headers (Official Schema)
     const headers = [
-        "First Name", "Last Name", "Email", "Company", "Address1", "Address2",
-        "City", "Province", "Province Code", "Country", "Country Code", "Zip",
-        "Phone", "Accepts Marketing", "Total Spent", "Total Orders", "Tags", "Note", "Tax Exempt"
+        "First Name", "Last Name", "Email", "Company", "Default Address Address1", "Default Address Address2",
+        "Default Address City", "Default Address Province", "Default Address Province Code", "Default Address Country", "Default Address Country Code", "Default Address Zip",
+        "Phone", "Accepts Email Marketing", "Total Spent", "Total Orders", "Tags", "Note", "Tax Exempt"
     ];
 
     let csvContent = "data:text/csv;charset=utf-8,";
