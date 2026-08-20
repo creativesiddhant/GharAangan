@@ -4152,11 +4152,12 @@ exportCsvBtn.addEventListener('click', () => {
         return;
     }
 
-    // Shopify Customer CSV Headers (Official Schema)
+    // Shopify Customer CSV Headers (Official Template Schema)
     const headers = [
-        "First Name", "Last Name", "Email", "Company", "Default Address Address1", "Default Address Address2",
-        "Default Address City", "Default Address Province", "Default Address Province Code", "Default Address Country", "Default Address Country Code", "Default Address Zip",
-        "Phone", "Accepts Email Marketing", "Total Spent", "Total Orders", "Tags", "Note", "Tax Exempt"
+        "First Name", "Last Name", "Email", "Accepts Email Marketing", "Default Address Company",
+        "Default Address Address1", "Default Address Address2", "Default Address City", "Default Address Province Code",
+        "Default Address Country Code", "Default Address Zip", "Default Address Phone", "Phone",
+        "Accepts SMS Marketing", "Accepts WhatsApp Marketing", "Tags", "Note", "Tax Exempt"
     ];
 
     let csvContent = "data:text/csv;charset=utf-8,";
@@ -4198,20 +4199,33 @@ exportCsvBtn.addEventListener('click', () => {
 
         // 5. Address / Location
         const city = `"${(booking.city || '').replace(/"/g, '""')}"`;
-        const province = `"${(booking.state || '').replace(/"/g, '""')}"`;
+        
+        // Translate full State Name to ISO Code for Default Address Province Code
+        const stateCodeMap = {
+            "andhra pradesh": "AP", "arunachal pradesh": "AR", "assam": "AS", "bihar": "BR",
+            "chhattisgarh": "CT", "goa": "GA", "gujarat": "GJ", "haryana": "HR",
+            "himachal pradesh": "HP", "jharkhand": "JH", "jammu and kashmir": "JK",
+            "karnataka": "KA", "kerala": "KL", "madhya pradesh": "MP", "maharashtra": "MH",
+            "manipur": "MN", "meghalaya": "ML", "mizoram": "MZ", "nagaland": "NL",
+            "odisha": "OD", "punjab": "PB", "rajasthan": "RJ", "sikkim": "SK",
+            "tamil nadu": "TN", "telangana": "TG", "tripura": "TR", "uttar pradesh": "UP",
+            "uttarakhand": "UT", "west bengal": "WB", "delhi": "DL", "puducherry": "PY",
+            "chandigarh": "CH", "ladakh": "LA", "lakshadweep": "LD", "andaman and nicobar": "AN",
+            "andaman and nicobar islands": "AN", "dadra and nagar haveli": "DN", "daman and diu": "DN"
+        };
+        const rawState = (booking.state || '').trim().toLowerCase();
+        const provinceCode = stateCodeMap[rawState] || '';
         
         // Empty columns for uncollected fields
         const email = "";
+        const acceptsEmailMarketing = "yes";
         const company = "";
         const address1 = "";
         const address2 = "";
-        const provinceCode = ""; // Shopify will auto-resolve if Province name is standard
-        const country = "India";
         const countryCode = "IN";
         const zip = "";
-        const acceptsMarketing = "yes"; // Pre-bookers typically accept updates
-        const totalSpent = "0.00";
-        const totalOrders = "0";
+        const acceptsSmsMarketing = "no";
+        const acceptsWhatsappMarketing = "no";
         const taxExempt = "no";
 
         // Row construction matching headers array order
@@ -4219,19 +4233,18 @@ exportCsvBtn.addEventListener('click', () => {
             `"${firstName.replace(/"/g, '""')}"`,
             `"${lastName.replace(/"/g, '""')}"`,
             `"${email}"`,
+            `"${acceptsEmailMarketing}"`,
             `"${company}"`,
             `"${address1}"`,
             `"${address2}"`,
             city,
-            province,
             `"${provinceCode}"`,
-            `"${country}"`,
             `"${countryCode}"`,
             `"${zip}"`,
-            `"${phone}"`,
-            `"${acceptsMarketing}"`,
-            `"${totalSpent}"`,
-            `"${totalOrders}"`,
+            `"${phone}"`, // Default Address Phone
+            `"${phone}"`, // Phone
+            `"${acceptsSmsMarketing}"`,
+            `"${acceptsWhatsappMarketing}"`,
             tags,
             note,
             `"${taxExempt}"`
